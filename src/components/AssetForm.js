@@ -34,7 +34,7 @@ function AssetForm({ onSubmit, editingAsset }) {
       firebaseId: "",
       code: "",
       name: "",
-      company: "",
+      company: "HXG",
       user: "",
       price: "",
       note: "",
@@ -60,12 +60,19 @@ function AssetForm({ onSubmit, editingAsset }) {
         required
       />
 
-      <input
+      <select
         name="company"
-        placeholder="Công ty"
         value={form.company}
         onChange={handleChange}
-      />
+        required
+      >
+        <option value="">-- Chọn công ty --</option>
+        <option value="HXG">HXG</option>
+        <option value="HOMIE">HOMIE</option>
+        <option value="GDB">GDB</option>
+        <option value="Vietfurniture">Vietfurniture</option>
+        <option value="NEW">NEW</option>
+      </select>
 
       <input
         name="user"

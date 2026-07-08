@@ -1,4 +1,12 @@
 import React from "react";
+const companies = [
+      "HXG",
+      "HOMIE",
+      "GDB",
+      "Vietfurniture",
+      "NEW"
+      ];
+
 
 function FilterBar({
   searchText,
@@ -14,11 +22,18 @@ function FilterBar({
         onChange={(e) => setSearchText(e.target.value)}
       />
 
-      <input
-        placeholder="Lọc theo công ty..."
+      <select
         value={companyFilter}
         onChange={(e) => setCompanyFilter(e.target.value)}
-      />
+      >
+        <option value="">Tất cả công ty</option>
+
+        {companies.map(company => (
+          <option key={company} value={company}>
+            {company}
+          </option>
+        ))}
+      </select>
     </div>
   );
 }
