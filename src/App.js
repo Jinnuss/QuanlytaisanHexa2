@@ -5,7 +5,16 @@ import AssetList from "./components/AssetList";
 import AssetDetail from "./components/AssetDetail";
 import FilterBar from "./components/FilterBar";
 import Toolbar from "./components/Toolbar";
-import { loadAssets, saveAssets } from "./utils/localStorage";
+import { clearAssets } from "./assetService";
+// import { loadAssets, saveAssets } from "./utils/localStorage";
+import { getAssets } from "./assetService";
+import {
+  addAsset as addAssetFirebase,
+  updateAsset as updateAssetFirebase,
+  deleteAsset as deleteAssetFirebase,
+  replaceAllAssets,
+  importAssets
+} from "./assetService";
 import {
   exportAssetsToExcel,
   importAssetsFromExcel
@@ -18,70 +27,152 @@ function App() {
 
   const [searchText, setSearchText] = useState("");
   const [companyFilter, setCompanyFilter] = useState("");
-  const [assets, setAssets] = useState(loadAssets());
+  const [assets, setAssets] = useState([]);
+  const addAsset = async (asset) => {
 
-  const addAsset = (asset) => {
-    setAssets([
-      ...assets,
-      {
-        ...asset,
-        logs: [
-          {
-            action: "Khởi tạo tài sản",
-            date: new Date().toLocaleString(),
-          },
-        ],
-      },
-    ]);
+    await addAssetFirebase({
+      ...asset,
+      logs: [
+        {
+          action: "Khởi tạo tài sản",
+          date: new Date().toLocaleString(),
+        },
+      ],
+    });
+
   };
+  // useEffect(() => {
+  //   saveAssets(assets);
+  // }, [assets]);
   useEffect(() => {
-    saveAssets(assets);
-  }, [assets]);
-  const clearData = () => {
-    localStorage.removeItem("assets");
-    setAssets([]);
+    getAssets(setAssets);
+  }, []);
+  // const clearData = () => {
+  //   localStorage.removeItem("assets");
+  //   setAssets([]);
+  // };
+  const clearData = async () => {
+
+    if (!window.confirm("Xóa toàn bộ dữ liệu?")) return;
+
+    await clearAssets();
+
   };
 
-  const updateAsset = (updatedAsset) => {
-    setAssets(
-      assets.map((asset) => {
-        if (asset.id !== updatedAsset.id) return asset;
+  // const updateAsset = (updatedAsset) => {
+  //   setAssets(
+  //     assets.map((asset) => {
+  //       if (asset.id !== updatedAsset.id) return asset;
 
-        const logs = [...asset.logs];
+  //       const logs = [...(Array.isArray(asset.logs) ? asset.logs : [])];
+  //       if (asset.user !== updatedAsset.user) {
+  //         logs.push({
+  //           action: `Cấp phát cho ${updatedAsset.user}`,
+  //           date: new Date().toLocaleString(),
+  //         });
+  //       }
 
-        if (asset.user !== updatedAsset.user) {
-          logs.push({
-            action: `Cấp phát cho ${updatedAsset.user}`,
-            date: new Date().toLocaleString(),
-          });
-        }
+  //       if (
+  //         asset.status === "Đang cấp phát" &&
+  //         updatedAsset.status === "Kho"
+  //       ) {
+  //         logs.push({
+  //           action: "Thu hồi tài sản",
+  //           date: new Date().toLocaleString(),
+  //         });
+  //       }
 
-        if (
-          asset.status === "Đang cấp phát" &&
-          updatedAsset.status === "Kho"
-        ) {
-          logs.push({
-            action: "Thu hồi tài sản",
-            date: new Date().toLocaleString(),
-          });
-        }
+  //       return {
+  //         ...updatedAsset,
+  //         logs,
+  //       };
+  //     })
+  //   );
+  //   const updateAsset = async (updatedAsset) => {
 
-        return {
-          ...updatedAsset,
-          logs,
-        };
-      })
+  //     const asset = assets.find(a => a.firebaseId === updatedAsset.firebaseId);
+
+  //     const logs = [...(asset?.logs || [])];
+
+  //     if (asset.user !== updatedAsset.user) {
+  //       logs.push({
+  //         action: `Cấp phát cho ${updatedAsset.user}`,
+  //         date: new Date().toLocaleString(),
+  //       });
+  //     }
+
+  //     if (
+  //       asset.status === "Đang cấp phát" &&
+  //       updatedAsset.status === "Kho"
+  //     ) {
+  //       logs.push({
+  //         action: "Thu hồi tài sản",
+  //         date: new Date().toLocaleString(),
+  //       });
+  //     }
+
+  //     await updateAssetFirebase({
+  //       ...updatedAsset,
+  //       logs,
+  //     });
+
+  //     setEditingAsset(null);
+
+
+  //   setEditingAsset(null);
+  //   };
+  // };
+  const updateAsset = async (updatedAsset) => {
+
+    const asset = assets.find(
+      a => a.firebaseId === updatedAsset.firebaseId
     );
+
+    if (!asset) return;
+
+    const logs = [...(asset.logs || [])];
+
+    if (asset.user !== updatedAsset.user) {
+      logs.push({
+        action: `Cấp phát cho ${updatedAsset.user}`,
+        date: new Date().toLocaleString(),
+      });
+    }
+
+    if (
+      asset.status === "Đang cấp phát" &&
+      updatedAsset.status === "Kho"
+    ) {
+      logs.push({
+        action: "Thu hồi tài sản",
+        date: new Date().toLocaleString(),
+      });
+    }
+
+    await updateAssetFirebase({
+      ...updatedAsset,
+      logs,
+    });
 
     setEditingAsset(null);
   };
 
-  const deleteAsset = (id) => {
-    if (window.confirm("Bạn có chắc chắn muốn xóa?")) {
-      setAssets(assets.filter((a) => a.id !== id));
-      setSelectedAsset(null);
-    }
+  // const deleteAsset = (id) => {
+  //   if (window.confirm("Bạn có chắc chắn muốn xóa?")) {
+  //     setAssets(assets.filter((a) => a.id !== id));
+  //     setSelectedAsset(null);
+  //   }
+  // };
+  const deleteAsset = async (firebaseId) => {
+
+    if (!window.confirm("Bạn có chắc chắn muốn xóa?")) return;
+
+    await deleteAssetFirebase(firebaseId);
+
+    setSelectedAsset(null);
+
   };
+
 
   const filteredAssets = assets.filter((asset) => {
     const matchName = asset.name
@@ -111,9 +202,14 @@ function App() {
       />
       <Toolbar
         onExport={() => exportAssetsToExcel(assets)}
+        // onImport={(file) =>
+        //   importAssetsFromExcel(file, (newAssets) => {
+        //     setAssets((prev) => [...prev, ...newAssets]);
+        //   })
+        // }
         onImport={(file) =>
-          importAssetsFromExcel(file, (newAssets) => {
-            setAssets((prev) => [...prev, ...newAssets]);
+          importAssetsFromExcel(file, async (newAssets) => {
+            await replaceAllAssets(newAssets);
           })
         }
       />
@@ -131,6 +227,6 @@ function App() {
       )}
     </div>
   );
-}
+};
 
 export default App;

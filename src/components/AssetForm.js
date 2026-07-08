@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 
 function AssetForm({ onSubmit, editingAsset }) {
   const [form, setForm] = useState({
-    id: "",
+    firebaseId: "",
     code: "",
     name: "",
     company: "",
@@ -28,14 +28,10 @@ function AssetForm({ onSubmit, editingAsset }) {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (!form.id) {
-      form.id = Date.now();
-    }
-
     onSubmit(form);
 
     setForm({
-      id: "",
+      firebaseId: "",
       code: "",
       name: "",
       company: "",

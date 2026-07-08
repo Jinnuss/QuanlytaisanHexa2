@@ -59,6 +59,7 @@ export const importAssetsFromExcel = (file, callback) => {
             auditLogs: []
         }));
         callback(assets);
+        
 
     };
 

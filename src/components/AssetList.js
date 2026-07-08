@@ -22,7 +22,7 @@ function AssetList({
 
       <tbody>
         {assets.map((asset) => (
-          <tr key={asset.id}>
+          <tr key={asset.firebaseId}>
             <td>{asset.code}</td>
             <td>{asset.name}</td>
             <td>{asset.company}</td>
@@ -33,16 +33,16 @@ function AssetList({
             <td>{asset.status}</td>
 
             <td>
-              <button onClick={() => onSelect(asset)}>
+              {/* <button onClick={() => onSelect(asset)}>
                 Chi tiết
-              </button>
+              </button> */}
 
               <button onClick={() => onEdit(asset)}>
                 Sửa
               </button>
 
               <button
-                onClick={() => onDelete(asset.id)}
+                onClick={() => onDelete(asset.firebaseId)}
               >
                 Xóa
               </button>
