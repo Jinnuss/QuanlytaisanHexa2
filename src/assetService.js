@@ -22,8 +22,8 @@ export const getAssets = (callback) => {
     }
 
     const assets = Object.entries(data).map(([key, value]) => ({
-      firebaseId: key,
       ...value,
+      firebaseId: key,
     }));
 
     callback(assets);
@@ -31,10 +31,17 @@ export const getAssets = (callback) => {
 };
 
 // Thêm
+// export const addAsset = async (asset) => {
+//   await push(ref(db, "assets"), asset);
+// };
 export const addAsset = async (asset) => {
-  await push(ref(db, "assets"), asset);
-};
+  const newRef = push(ref(db, "assets"));
 
+  await set(newRef, {
+    ...asset,
+    firebaseId: newRef.key,
+  });
+};
 // Cập nhật
 export const updateAsset = async (asset) => {
   await update(
