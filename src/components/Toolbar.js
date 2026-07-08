@@ -4,22 +4,25 @@ function Toolbar({ onExport, onImport }) {
 
         <div className="toolbar">
 
-            <button onClick={onExport}>
+            <button className="button" onClick={onExport}>
                 Export Excel
             </button>
 
-            <label className="btn">
+            <div className="button1">
+                <label className="btn">
 
-                Import Excel
+                    Import Excel
 
-                <input
-                    hidden
-                    type="file"
-                    accept=".xlsx,.xls"
-                    onChange={(e) => onImport(e.target.files[0])}
-                />
+                    <input
+                        hidden
+                        type="file"
+                        accept=".xlsx,.xls"
+                        onChange={(e) => onImport(e.target.files[0])}
+                    />
 
-            </label>
+                </label>
+            </div>
+
 
         </div>
 

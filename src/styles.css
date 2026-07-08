@@ -56,3 +56,52 @@ td, th {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.buttonXoa{
+  margin-top: 10px;
+  margin-bottom: 10px;
+  background-color: red;
+  color: white;
+  padding: 6px;
+  border-radius: 8px;
+  border: 1px solid black;
+
+}
+.buttonXoa:hover{
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+  transition: all 0.5s;
+    border: 1px solid red;
+
+}
+
+.button{
+  margin-top: 10px;
+  margin-bottom: 10px;
+  background-color: greenyellow;
+  padding: 6px;
+  border-radius: 8px;
+  border: 1px solid black;
+}
+.button:hover{
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+  transition: all 0.5s;
+  border: 1px solid greenyellow;
+}
+
+.button1{
+  display: inline-block;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  background-color: green;
+  padding: 4px;
+  border-radius: 8px;
+  border: 1px solid black;
+  margin-left: 10px;
+}
+.button1:hover{
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+  transition: all 0.5s;
+  border: 1px solid green;
+}
+.bg{
+  background-color: aqua;
+}

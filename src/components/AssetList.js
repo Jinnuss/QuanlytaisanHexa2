@@ -9,7 +9,7 @@ function AssetList({
   return (
     <table>
       <thead>
-        <tr>
+        <tr className="bg">
           <th>Mã</th>
           <th>Tên</th>
           <th>Công ty</th>
@@ -40,11 +40,11 @@ function AssetList({
                 Chi tiết
               </button> */}
 
-              <button onClick={() => onEdit(asset)}>
+              <button className="button" onClick={() => onEdit(asset)}>
                 Sửa
               </button>
 
-              <button
+              <button className="buttonXoa"
                 onClick={() => {
                   console.log(asset);
                   console.log(asset.firebaseId);

@@ -6,6 +6,7 @@ import AssetDetail from "./components/AssetDetail";
 import FilterBar from "./components/FilterBar";
 import Toolbar from "./components/Toolbar";
 import { clearAssets } from "./assetService";
+import "./styles.css";
 // import { loadAssets, saveAssets } from "./utils/localStorage";
 import { getAssets } from "./assetService";
 import {
@@ -213,7 +214,7 @@ function App() {
           })
         }
       />
-      <button onClick={clearData}>Xóa dữ liệu</button>
+      <button className="buttonXoa" onClick={clearData}>Xóa dữ liệu</button>
 
       <AssetList
         assets={filteredAssets}
