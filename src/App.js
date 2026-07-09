@@ -34,7 +34,7 @@ function App() {
   const [companyFilter, setCompanyFilter] = useState("");
   const [assets, setAssets] = useState([]);
   const [showMenu, setShowMenu] = useState(false);
-  const [codeSearch, setCodeSearch] = useState("");
+  // const [codeSearch, setCodeSearch] = useState("");
   const menuRef = useRef(null);
   const addAsset = async (asset) => {
 
