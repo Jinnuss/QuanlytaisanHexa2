@@ -56,7 +56,7 @@ export const importAssetsFromExcel = (file, callback) => {
             price: Number(item["Giá tiền"]) || 0,
             note: item["Ghi chú"] || "",
             status: item["Người sử dụng"] ? "Đang cấp phát" : "Kho",
-            auditLogs: []
+            logs: []
         }));
         callback(assets);
         

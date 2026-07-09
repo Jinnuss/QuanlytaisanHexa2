@@ -22,9 +22,51 @@ function CompanyStats({ assets }) {
 
         return result;
     }, {});
+    const total = assets.reduce(
+        (result, asset) => {
+            result.total++;
+
+            if (asset.status === "Kho") {
+                result.stock++;
+            } else {
+                result.using++;
+            }
+
+            return result;
+        },
+        {
+            total: 0,
+            stock: 0,
+            using: 0,
+        }
+    );
 
     return (
         <div className="company-stats">
+            <div className="stat-card total-card">
+
+                <div className="stat-header">
+                    TẤT CẢ
+                </div>
+
+                <div className="stat-total">
+                    {total.total}
+                </div>
+
+
+                <div className="stat-footer">
+
+                    <div className="using-item">
+                        🟢 {total.using}
+                    </div>
+
+                    <div className="stock-item">
+                        📦 {total.stock}
+                    </div>
+
+                </div>
+
+            </div>
             {Object.entries(stats).map(([company, value]) => (
                 <div className="stat-card" key={company}>
 

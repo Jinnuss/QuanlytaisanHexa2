@@ -1,8 +1,10 @@
 import React from "react";
+import AuditLog from "./AuditLog";
 
 function AssetDetail({ asset }) {
   return (
     <div className="detail">
+
       <h2>Chi tiết tài sản</h2>
 
       <p>
@@ -14,22 +16,24 @@ function AssetDetail({ asset }) {
       </p>
 
       <p>
-        <strong>Người sử dụng:</strong> {asset.user}
+        <strong>Công ty:</strong> {asset.company}
+      </p>
+
+      <p>
+        <strong>Người sử dụng:</strong>{" "}
+        {asset.user || "Chưa cấp phát"}
       </p>
 
       <p>
         <strong>Trạng thái:</strong> {asset.status}
       </p>
 
-      <h3>Lịch sử cấp phát</h3>
+      <p>
+        <strong>Ghi chú:</strong> {asset.note}
+      </p>
 
-      <ul>
-        {asset.logs.map((log, index) => (
-          <li key={index}>
-            {log.date} - {log.action}
-          </li>
-        ))}
-      </ul>
+      <AuditLog logs={asset.logs || []} />
+
     </div>
   );
 }

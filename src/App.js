@@ -46,6 +46,7 @@ function App() {
         {
           action: "Khởi tạo tài sản",
           date: new Date().toLocaleString(),
+          detail: "Tạo mới tài sản",
         },
       ],
     });
@@ -161,7 +162,6 @@ function App() {
   //   };
   // };
   const updateAsset = async (updatedAsset) => {
-
     const asset = assets.find(
       a => a.firebaseId === updatedAsset.firebaseId
     );
@@ -172,18 +172,25 @@ function App() {
 
     if (asset.user !== updatedAsset.user) {
       logs.push({
-        action: `Cấp phát cho ${updatedAsset.user}`,
+        action: "Thay đổi người sử dụng",
         date: new Date().toLocaleString(),
+        detail: `${asset.user || "Kho"} → ${updatedAsset.user || "Kho"}`,
       });
     }
 
-    if (
-      asset.status === "Đang cấp phát" &&
-      updatedAsset.status === "Kho"
-    ) {
+    if (asset.status !== updatedAsset.status) {
       logs.push({
-        action: "Thu hồi tài sản",
+        action: "Thay đổi trạng thái",
         date: new Date().toLocaleString(),
+        detail: `${asset.status} → ${updatedAsset.status}`,
+      });
+    }
+
+    if (asset.note !== updatedAsset.note) {
+      logs.push({
+        action: "Cập nhật ghi chú",
+        date: new Date().toLocaleString(),
+        detail: `${asset.note || "Trống"} → ${updatedAsset.note || "Trống"}`,
       });
     }
 
@@ -255,7 +262,8 @@ function App() {
 
             action: "Khởi tạo tài sản",
 
-            date: new Date().toLocaleString()
+            date: new Date().toLocaleString(),
+            detail: `Nhập kho từ mã gốc ${data.code}`,
 
           }
 
@@ -407,13 +415,18 @@ function App() {
       </div>
       <div className="table-footer">
         <span>
-           <strong>{filteredAssets.length}</strong> /{" "}
-          <strong>{assets.length}</strong> 
+          <strong>{filteredAssets.length}</strong> /{" "}
+          <strong>{assets.length}</strong>
         </span>
       </div>
 
       {selectedAsset && (
-        <AssetDetail asset={selectedAsset} />
+        <Modal
+          title="Chi tiết tài sản"
+          onClose={() => setSelectedAsset(null)}
+        >
+          <AssetDetail asset={selectedAsset} />
+        </Modal>
       )}
       {showAddModal && (
         <Modal
