@@ -8,6 +8,7 @@ import Toolbar from "./components/Toolbar";
 import { clearAssets } from "./assetService";
 import BulkImportForm from "./components/BulkImportForm";
 import { getNextAssetNumber } from "./assetService";
+import CompanyStats from "./components/CompanyStats";
 import Modal from "./components/Modal";
 import "./styles.css";
 // import { loadAssets, saveAssets } from "./utils/localStorage";
@@ -34,6 +35,7 @@ function App() {
   const [companyFilter, setCompanyFilter] = useState("");
   const [assets, setAssets] = useState([]);
   const [showMenu, setShowMenu] = useState(false);
+  const [statusFilter, setStatusFilter] = useState("");
   // const [codeSearch, setCodeSearch] = useState("");
   const menuRef = useRef(null);
   const addAsset = async (asset) => {
@@ -68,32 +70,32 @@ function App() {
   };
   useEffect(() => {
 
-  function handleClickOutside(event) {
+    function handleClickOutside(event) {
 
-    if (
-      menuRef.current &&
-      !menuRef.current.contains(event.target)
-    ) {
-      setShowMenu(false);
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(event.target)
+      ) {
+        setShowMenu(false);
+      }
+
     }
 
-  }
-
-  document.addEventListener(
-    "mousedown",
-    handleClickOutside
-  );
-
-  return () => {
-
-    document.removeEventListener(
+    document.addEventListener(
       "mousedown",
       handleClickOutside
     );
 
-  };
+    return () => {
 
-}, []);
+      document.removeEventListener(
+        "mousedown",
+        handleClickOutside
+      );
+
+    };
+
+  }, []);
 
   // const updateAsset = (updatedAsset) => {
   //   setAssets(
@@ -297,7 +299,10 @@ function App() {
     const matchCompany =
       companyFilter === "" || asset.company === companyFilter;
 
-    return matchSearch && matchCompany;
+    const matchStatus =
+      statusFilter === "" || asset.status === statusFilter;
+
+    return matchSearch && matchCompany && matchStatus;
   });
 
   return (
@@ -350,6 +355,8 @@ function App() {
             setSearchText={setSearchText}
             companyFilter={companyFilter}
             setCompanyFilter={setCompanyFilter}
+            statusFilter={statusFilter}
+            setStatusFilter={setStatusFilter}
           />
         </div>
 
@@ -385,6 +392,7 @@ function App() {
           </div>
         </div>
       </div>
+      <CompanyStats assets={assets} />
       <div className="table-container">
 
         <AssetList
@@ -396,6 +404,12 @@ function App() {
           onDelete={deleteAsset}
           onSelect={setSelectedAsset}
         />
+      </div>
+      <div className="table-footer">
+        <span>
+           🟢<strong>{filteredAssets.length}</strong> /{" "}
+          <strong>{assets.length}</strong> 📦
+        </span>
       </div>
 
       {selectedAsset && (

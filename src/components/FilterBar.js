@@ -15,6 +15,8 @@ function FilterBar({
   setCompanyFilter,
   codeSearch,
   setCodeSearch,
+  statusFilter,
+  setStatusFilter,
 }) {
   return (
     <div className="filter">
@@ -45,6 +47,14 @@ function FilterBar({
             {company}
           </option>
         ))}
+      </select>
+      <select
+        value={statusFilter}
+        onChange={(e) => setStatusFilter(e.target.value)}
+      >
+        <option value="">Tất cả trạng thái</option>
+        <option value="Kho">Kho</option>
+        <option value="Đang cấp phát">Đang cấp phát</option>
       </select>
     </div>
   );
