@@ -407,8 +407,8 @@ function App() {
       </div>
       <div className="table-footer">
         <span>
-           🟢<strong>{filteredAssets.length}</strong> /{" "}
-          <strong>{assets.length}</strong> 📦
+           <strong>{filteredAssets.length}</strong> /{" "}
+          <strong>{assets.length}</strong> 
         </span>
       </div>
 
