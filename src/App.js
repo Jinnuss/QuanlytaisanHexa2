@@ -402,7 +402,9 @@ function App() {
 
   return (
     <div className="container">
-      <div className="title">Quản lý Tài Sản HEXAGROUP</div>
+      <div className="app-header">
+        <div className="title">QUẢN LÝ TÀI SẢN HEXAGROUP</div>
+      </div>
       {/* 
       <div className="action-bar">
         <button onClick={() => setShowAddModal(true)}>
