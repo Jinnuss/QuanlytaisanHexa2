@@ -161,36 +161,123 @@ function App() {
   //   setEditingAsset(null);
   //   };
   // };
+  // const updateAsset = async (updatedAsset) => {
+  //   const asset = assets.find(
+  //     a => a.firebaseId === updatedAsset.firebaseId
+  //   );
+
+  //   if (!asset) return;
+
+  //   const logs = [...(asset.logs || [])];
+
+  //   if (asset.user !== updatedAsset.user) {
+  //     logs.push({
+  //       action: "Thay đổi người sử dụng",
+  //       date: new Date().toLocaleString(),
+  //       detail: `${asset.user || "Kho"} → ${updatedAsset.user || "Kho"}`,
+  //     });
+  //   }
+
+  //   if (asset.status !== updatedAsset.status) {
+  //     logs.push({
+  //       action: "Thay đổi trạng thái",
+  //       date: new Date().toLocaleString(),
+  //       detail: `${asset.status} → ${updatedAsset.status}`,
+  //     });
+  //   }
+
+  //   if (asset.note !== updatedAsset.note) {
+  //     logs.push({
+  //       action: "Cập nhật ghi chú",
+  //       date: new Date().toLocaleString(),
+  //       detail: `${asset.note || "Trống"} → ${updatedAsset.note || "Trống"}`,
+  //     });
+  //   }
+
+  //   await updateAssetFirebase({
+  //     ...updatedAsset,
+  //     logs,
+  //   });
+
+  //   setEditingAsset(null);
+  // };
   const updateAsset = async (updatedAsset) => {
-    const asset = assets.find(
-      a => a.firebaseId === updatedAsset.firebaseId
+    const oldAsset = assets.find(
+      (asset) => asset.firebaseId === updatedAsset.firebaseId
     );
 
-    if (!asset) return;
+    if (!oldAsset) return;
 
-    const logs = [...(asset.logs || [])];
+    const logs = Array.isArray(oldAsset.logs)
+      ? [...oldAsset.logs]
+      : [];
 
-    if (asset.user !== updatedAsset.user) {
+    const now = new Date().toLocaleString("vi-VN");
+
+    // Thay đổi mã tài sản
+    if (oldAsset.code !== updatedAsset.code) {
+      logs.push({
+        action: "Thay đổi mã tài sản",
+        date: now,
+        detail: `${oldAsset.code || "Trống"} → ${updatedAsset.code || "Trống"}`,
+      });
+    }
+
+    // Thay đổi tên
+    if (oldAsset.name !== updatedAsset.name) {
+      logs.push({
+        action: "Thay đổi tên tài sản",
+        date: now,
+        detail: `${oldAsset.name || "Trống"} → ${updatedAsset.name || "Trống"}`,
+      });
+    }
+
+    // Thay đổi công ty
+    if (oldAsset.company !== updatedAsset.company) {
+      logs.push({
+        action: "Thay đổi công ty",
+        date: now,
+        detail: `${oldAsset.company || "Trống"} → ${updatedAsset.company || "Trống"}`,
+      });
+    }
+
+    // Thay đổi người sử dụng
+    if (oldAsset.user !== updatedAsset.user) {
       logs.push({
         action: "Thay đổi người sử dụng",
-        date: new Date().toLocaleString(),
-        detail: `${asset.user || "Kho"} → ${updatedAsset.user || "Kho"}`,
+        date: now,
+        detail: `${oldAsset.user || "Chưa cấp phát"} → ${updatedAsset.user || "Chưa cấp phát"
+          }`,
       });
     }
 
-    if (asset.status !== updatedAsset.status) {
+    // Thay đổi giá tiền
+    if (Number(oldAsset.price) !== Number(updatedAsset.price)) {
+      logs.push({
+        action: "Thay đổi giá tiền",
+        date: now,
+        detail: `${Number(oldAsset.price || 0).toLocaleString("vi-VN")} ₫ → ${Number(
+          updatedAsset.price || 0
+        ).toLocaleString("vi-VN")} ₫`,
+      });
+    }
+
+    // Thay đổi ghi chú
+    if (oldAsset.note !== updatedAsset.note) {
+      logs.push({
+        action: "Thay đổi ghi chú",
+        date: now,
+        detail: `${oldAsset.note || "Trống"} → ${updatedAsset.note || "Trống"}`,
+      });
+    }
+
+    // Thay đổi trạng thái
+    if (oldAsset.status !== updatedAsset.status) {
       logs.push({
         action: "Thay đổi trạng thái",
-        date: new Date().toLocaleString(),
-        detail: `${asset.status} → ${updatedAsset.status}`,
-      });
-    }
-
-    if (asset.note !== updatedAsset.note) {
-      logs.push({
-        action: "Cập nhật ghi chú",
-        date: new Date().toLocaleString(),
-        detail: `${asset.note || "Trống"} → ${updatedAsset.note || "Trống"}`,
+        date: now,
+        detail: `${oldAsset.status || "Trống"} → ${updatedAsset.status || "Trống"
+          }`,
       });
     }
 
