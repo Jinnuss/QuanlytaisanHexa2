@@ -5,6 +5,7 @@ function AssetList({
   onEdit,
   onDelete,
   onSelect,
+  onShowQR,
 }) {
   return (
     <table>
@@ -78,6 +79,14 @@ function AssetList({
                 >
 
                   🗑️
+                </button>
+                <button
+                  type="button"
+                  className="icon-btn qr-btn"
+                  onClick={() => onShowQR(asset)}
+                  title="QR Code"
+                >
+                  ▦
                 </button>
               </div>
 

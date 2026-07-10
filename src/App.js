@@ -10,6 +10,7 @@ import BulkImportForm from "./components/BulkImportForm";
 import { getNextAssetNumber } from "./assetService";
 import CompanyStats from "./components/CompanyStats";
 import Modal from "./components/Modal";
+import QRCodeModal from "./components/QRCodeModal";
 import "./styles.css";
 // import { loadAssets, saveAssets } from "./utils/localStorage";
 import { getAssets } from "./assetService";
@@ -36,6 +37,7 @@ function App() {
   const [assets, setAssets] = useState([]);
   const [showMenu, setShowMenu] = useState(false);
   const [statusFilter, setStatusFilter] = useState("");
+  const [qrAsset, setQrAsset] = useState(null);
   // const [codeSearch, setCodeSearch] = useState("");
   const menuRef = useRef(null);
   const addAsset = async (asset) => {
@@ -500,6 +502,8 @@ function App() {
           }}
           onDelete={deleteAsset}
           onSelect={setSelectedAsset}
+          onShowQR={setQrAsset}
+
         />
       </div>
       <div className="table-footer">
@@ -553,6 +557,12 @@ function App() {
             }}
           />
         </Modal>
+      )}
+      {qrAsset && (
+        <QRCodeModal
+          asset={qrAsset}
+          onClose={() => setQrAsset(null)}
+        />
       )}
     </div>
   );

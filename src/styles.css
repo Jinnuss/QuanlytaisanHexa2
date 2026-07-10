@@ -369,7 +369,7 @@ table {
 }
 
 .col-action {
-  width: 15%;
+  width: 20%;
 }
 
 /* Giá tiền không xuống dòng */
@@ -1208,4 +1208,296 @@ body {
   background-position: center top;
   background-repeat: no-repeat;
   background-attachment: fixed;
+}
+.qr-modal {
+  position: relative;
+  width: min(92vw, 460px);
+  max-height: 90vh;
+  overflow-y: auto;
+
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid #dbeafe;
+  border-radius: 24px;
+  padding: 30px;
+
+  text-align: center;
+
+  box-shadow:
+    0 28px 70px rgba(15, 23, 42, 0.28);
+
+  animation: qrModalShow 0.25s ease;
+}
+
+.qr-close-button {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  margin: 0;
+
+  border-radius: 50%;
+  background: #ef4444;
+  color: white;
+
+  font-size: 24px;
+  line-height: 1;
+}
+
+.qr-brand {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+
+  margin-bottom: 18px;
+}
+
+.qr-brand-logo {
+  width: 42px;
+  height: 42px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 12px;
+  background: linear-gradient(135deg, #2563eb, #0f4c81);
+  color: white;
+
+  font-size: 25px;
+}
+
+.qr-brand span {
+  display: block;
+  color: #0f3d5e;
+  font-weight: 800;
+  font-size: 18px;
+  text-align: left;
+}
+
+.qr-brand p {
+  margin: 2px 0 0;
+  color: #64748b;
+  font-size: 12px;
+  text-align: left;
+}
+
+.qr-modal h2 {
+  margin: 0 0 18px;
+  color: #0f172a;
+}
+
+.qr-wrapper {
+  width: fit-content;
+  margin: auto;
+  padding: 18px;
+
+  background: white;
+  border: 1px solid #dbeafe;
+  border-radius: 18px;
+
+  box-shadow: 0 10px 26px rgba(15, 61, 94, 0.1);
+}
+
+.qr-wrapper svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.qr-modal h3 {
+  margin: 18px 0 5px;
+  color: #0f3d5e;
+  font-size: 22px;
+}
+
+.qr-asset-name {
+  margin: 0;
+  color: #334155;
+  font-weight: 600;
+}
+
+.qr-description {
+  margin: 12px 0 20px;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.qr-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.qr-download-button {
+  background: #0f4c81;
+}
+
+.qr-close-secondary {
+  background: #64748b;
+}
+
+.qr-btn {
+  background: #10b981 !important;
+}
+
+.qr-btn:hover {
+  background: #059669 !important;
+}
+
+@keyframes qrModalShow {
+  from {
+    opacity: 0;
+    transform: translateY(-16px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.public-asset-page {
+  min-height: 100vh;
+  padding: 30px 16px;
+
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.public-asset-card {
+  width: min(100%, 820px);
+  padding: 28px;
+
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid #dbeafe;
+  border-radius: 24px;
+
+  box-shadow: 0 22px 55px rgba(15, 61, 94, 0.16);
+  backdrop-filter: blur(12px);
+}
+
+.public-asset-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.public-logo {
+  width: 56px;
+  height: 56px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 16px;
+  background: linear-gradient(135deg, #2563eb, #0f4c81);
+  color: white;
+
+  font-size: 30px;
+}
+
+.public-brand {
+  margin: 0;
+  color: #2563eb;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.public-asset-header h1 {
+  margin: 2px 0 0;
+  padding: 0;
+  border: none;
+
+  font-size: 27px;
+  color: #0f172a;
+}
+
+.public-asset-code {
+  margin: 22px 0;
+  padding: 16px;
+
+  border-radius: 14px;
+  background: #eff6ff;
+
+  color: #0f4c81;
+  font-size: 24px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.public-information-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.public-field {
+  padding: 15px;
+
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+}
+
+.public-field span {
+  display: block;
+  margin-bottom: 6px;
+
+  color: #64748b;
+  font-size: 13px;
+}
+
+.public-field strong {
+  color: #0f172a;
+  overflow-wrap: anywhere;
+}
+
+.public-status {
+  display: inline-flex;
+  width: fit-content;
+  padding: 6px 12px;
+  border-radius: 999px;
+}
+
+.public-message {
+  margin-top: 80px;
+  padding: 24px;
+
+  background: white;
+  border-radius: 18px;
+
+  color: #0f3d5e;
+  font-weight: 700;
+
+  box-shadow: 0 16px 38px rgba(15, 61, 94, 0.12);
+}
+
+.error-message {
+  color: #b91c1c;
+}
+
+@media (max-width: 650px) {
+  .public-information-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .public-asset-card {
+    padding: 18px;
+  }
+
+  .qr-actions {
+    flex-direction: column;
+  }
+
+  .qr-actions button {
+    width: 100%;
+  }
 }
