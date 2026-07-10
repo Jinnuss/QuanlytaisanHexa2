@@ -110,7 +110,7 @@ function QRCodeModal({ asset, onClose }) {
         </button>
 
         <div className="qr-brand">
-          <div className="qr-brand-logo">⬢</div>
+          
 
           <div>
             <span>HEXAGROUP</span>
