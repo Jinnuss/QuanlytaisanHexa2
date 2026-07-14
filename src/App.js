@@ -13,7 +13,7 @@ import Modal from "./components/Modal";
 import QRCodeModal from "./components/QRCodeModal";
 import CreateAccountForm from "./components/CreateAccountForm";
 import "./styles.css";
-import { confirm } from "./utils/alert";
+// import { confirm } from "./utils/alert";
 // import { loadAssets, saveAssets } from "./utils/localStorage";
 import { getAssets } from "./assetService";
 import {
