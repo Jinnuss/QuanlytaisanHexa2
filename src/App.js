@@ -558,13 +558,13 @@ function App() {
   }
   const isAdmin =
     userProfile?.role === "admin";
-  const canCreate = isAdmin;
-  const canEdit = isAdmin;
-  const canDelete = isAdmin;
-  const canImport = isAdmin;
-  const canExport = isAdmin;
-  const canClearAll = isAdmin;
-  const canManageAccounts = isAdmin;
+  // const canCreate = isAdmin;
+  // const canEdit = isAdmin;
+  // const canDelete = isAdmin;
+  // const canImport = isAdmin;
+  // const canExport = isAdmin;
+  // const canClearAll = isAdmin;
+  // const canManageAccounts = isAdmin;
   return (
 
     <div className="container">
