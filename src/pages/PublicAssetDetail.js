@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { get, ref } from "firebase/database";
-import { db } from "../firebase";
 import AuditLog from "../components/AuditLog";
 import { getPublicAsset } from "../assetService";
 
