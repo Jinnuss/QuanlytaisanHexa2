@@ -2,7 +2,12 @@ import React, { useState } from "react";
 import {
     createEmployeeAccount,
 } from "../accountService";
-
+import {
+    closeAlert,
+    showError,
+    showLoading,
+    showSuccess,
+} from "../utils/alert";
 const COMPANIES = [
     "HXG",
     "HOMIE",
@@ -56,6 +61,8 @@ function CreateAccountForm({
             setLoading(true);
             setError("");
 
+            showLoading("Đang tạo tài khoản...");
+
             await createEmployeeAccount({
                 name: form.name,
                 email: form.email,
@@ -63,7 +70,12 @@ function CreateAccountForm({
                 company: form.company,
             });
 
-            alert("Tạo tài khoản thành công.");
+            closeAlert();
+
+            await showSuccess(
+                "Tạo tài khoản thành công",
+                `${form.email} đã có thể đăng nhập hệ thống.`
+            );
 
             setForm(initialForm);
 
@@ -71,7 +83,14 @@ function CreateAccountForm({
                 onSuccess();
             }
         } catch (err) {
+            closeAlert();
+
             setError(err.message);
+
+            await showError(
+                "Không thể tạo tài khoản",
+                err.message
+            );
         } finally {
             setLoading(false);
         }

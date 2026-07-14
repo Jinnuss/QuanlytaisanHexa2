@@ -13,8 +13,15 @@ import Modal from "./components/Modal";
 import QRCodeModal from "./components/QRCodeModal";
 import CreateAccountForm from "./components/CreateAccountForm";
 import "./styles.css";
+import { confirm } from "./utils/alert";
 // import { loadAssets, saveAssets } from "./utils/localStorage";
 import { getAssets } from "./assetService";
+import {
+  showConfirm,
+  showError,
+  showToast,
+  showSuccess,
+} from "./utils/alert";
 import {
   addAsset as addAssetFirebase,
   updateAsset as updateAssetFirebase,
@@ -65,38 +72,84 @@ function App() {
   ] = useState(false);
   const addAsset = async (asset) => {
     if (!isAdmin) {
-      alert("Bạn không có quyền thêm tài sản.");
+      await showError(
+        "Không có quyền",
+        "Bạn không có quyền thêm tài sản."
+      );
+
       return;
     }
 
-    await addAssetFirebase({
-      ...asset,
-      logs: [
-        {
-          action: "Khởi tạo tài sản",
-          date: new Date().toLocaleString(
-            "vi-VN"
-          ),
-          detail: `Tạo bởi ${userProfile.name ||
-            currentUser.email
-            }`,
-        },
-      ],
-    });
+    try {
+      await addAssetFirebase({
+        ...asset,
+
+        createdDate:
+          asset.createdDate ||
+          new Date().toISOString().split("T")[0],
+
+        logs: [
+          {
+            action: "Khởi tạo tài sản",
+            date: new Date().toLocaleString("vi-VN"),
+            detail: `Tạo bởi ${userProfile?.name ||
+              currentUser?.email ||
+              "Admin"
+              }`,
+          },
+        ],
+      });
+
+      showToast(
+        "success",
+        "Thêm tài sản thành công"
+      );
+    } catch (error) {
+      console.error(
+        "Lỗi thêm tài sản:",
+        error
+      );
+
+      await showError(
+        "Không thể thêm tài sản",
+        error.message ||
+        "Đã xảy ra lỗi khi lưu dữ liệu."
+      );
+    }
   };
   // useEffect(() => {
   //   saveAssets(assets);
   // }, [assets]);
   const handleLogout = async () => {
-    const ok = window.confirm("Bạn có muốn đăng xuất?");
+    const result = await showConfirm({
+      title: "Đăng xuất",
+      text: "Bạn có muốn đăng xuất khỏi hệ thống không?",
+      confirmText: "Đăng xuất",
+      cancelText: "Ở lại",
+      icon: "question",
+    });
 
-    if (!ok) return;
+    if (!result.isConfirmed) {
+      return;
+    }
 
     try {
       await logout();
-    } catch (err) {
-      console.error(err);
-      alert("Không thể đăng xuất.");
+
+      showToast(
+        "success",
+        "Đăng xuất thành công"
+      );
+    } catch (error) {
+      console.error(
+        "Lỗi đăng xuất:",
+        error
+      );
+
+      await showError(
+        "Không thể đăng xuất",
+        error.message
+      );
     }
   };
   useEffect(() => {
@@ -119,16 +172,45 @@ function App() {
   // };
   const clearData = async () => {
     if (!isAdmin) {
-      alert(
-        "Bạn không có quyền xóa toàn bộ dữ liệu."
+      await showError(
+        "Không có quyền",
+        "Chỉ Admin được xóa toàn bộ dữ liệu."
       );
+
       return;
     }
 
-    if (!window.confirm("Xóa toàn bộ dữ liệu?")) return;
+    const result = await showConfirm({
+      title: "Xóa toàn bộ dữ liệu",
+      text: "Tất cả tài sản sẽ bị xóa và không thể khôi phục.",
+      confirmText: "Xóa toàn bộ",
+      cancelText: "Hủy",
+      icon: "warning",
+      danger: true,
+    });
 
-    await clearAssets();
+    if (!result.isConfirmed) {
+      return;
+    }
 
+    try {
+      await clearAssets();
+
+      showToast(
+        "success",
+        "Đã xóa toàn bộ dữ liệu"
+      );
+    } catch (error) {
+      console.error(
+        "Lỗi xóa dữ liệu:",
+        error
+      );
+
+      await showError(
+        "Không thể xóa dữ liệu",
+        error.message
+      );
+    }
   };
   useEffect(() => {
 
@@ -409,12 +491,29 @@ function App() {
       });
     }
 
-    await updateAssetFirebase({
-      ...updatedAsset,
-      logs,
-    });
+    try {
+      await updateAssetFirebase({
+        ...updatedAsset,
+        logs,
+      });
 
-    setEditingAsset(null);
+      setEditingAsset(null);
+
+      showToast(
+        "success",
+        "Cập nhật tài sản thành công"
+      );
+    } catch (error) {
+      console.error(
+        "Lỗi cập nhật:",
+        error
+      );
+
+      await showError(
+        "Không thể cập nhật tài sản",
+        error.message
+      );
+    }
   };
 
   // const deleteAsset = (id) => {
@@ -423,22 +522,53 @@ function App() {
   //     setSelectedAsset(null);
   //   }
   // };
-  const deleteAsset = async (firebaseId) => {
+  const deleteAsset = async (
+    firebaseId
+  ) => {
     if (!isAdmin) {
-      alert("Bạn không có quyền xóa tài sản.");
+      await showError(
+        "Không có quyền",
+        "Bạn không có quyền xóa tài sản."
+      );
+
       return;
     }
 
-    if (
-      !window.confirm(
-        "Bạn có chắc chắn muốn xóa?"
-      )
-    ) {
+    const result = await showConfirm({
+      title: "Xóa tài sản",
+      text: "Tài sản sẽ bị xóa khỏi hệ thống. Bạn chắc chắn muốn tiếp tục?",
+      confirmText: "Xóa tài sản",
+      cancelText: "Hủy",
+      icon: "warning",
+      danger: true,
+    });
+
+    if (!result.isConfirmed) {
       return;
     }
 
-    await deleteAssetFirebase(firebaseId);
-    setSelectedAsset(null);
+    try {
+      await deleteAssetFirebase(
+        firebaseId
+      );
+
+      setSelectedAsset(null);
+
+      showToast(
+        "success",
+        "Đã xóa tài sản"
+      );
+    } catch (error) {
+      console.error(
+        "Lỗi xóa tài sản:",
+        error
+      );
+
+      await showError(
+        "Không thể xóa tài sản",
+        error.message
+      );
+    }
   };
 
 
@@ -498,7 +628,10 @@ function App() {
 
     }
 
-    alert("Nhập kho thành công!");
+    await showSuccess(
+      "Nhập kho thành công",
+      `Đã tạo ${quantity} tài sản mới.`
+    );
 
   };
   // const filteredAssets = assets.filter((asset) => {

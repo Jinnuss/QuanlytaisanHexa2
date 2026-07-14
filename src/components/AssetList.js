@@ -77,22 +77,20 @@ function AssetList({
                 }
                 {
                   canDelete && (
-                    <button title="Sửa" className=" icon-btn edit-btn" onClick={() => onEdit(asset)}>
-                      ✏️
+                    <button title="Xóa" className="icon-btn delete-btn"
+                      onClick={() => {
+                        console.log(asset);
+                        console.log(asset.firebaseId);
+                        onDelete(asset.firebaseId)
+                      }}
+                    >
+
+                      🗑️
                     </button>
                   )
                 }
 
-                <button title="Xóa" className="icon-btn delete-btn"
-                  onClick={() => {
-                    console.log(asset);
-                    console.log(asset.firebaseId);
-                    onDelete(asset.firebaseId)
-                  }}
-                >
 
-                  🗑️
-                </button>
                 <button
                   type="button"
                   className="icon-btn qr-btn"
