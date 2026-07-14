@@ -12,6 +12,7 @@ import CompanyStats from "./components/CompanyStats";
 import Modal from "./components/Modal";
 import QRCodeModal from "./components/QRCodeModal";
 import CreateAccountForm from "./components/CreateAccountForm";
+import { syncPublicAssets } from "./assetService";
 import "./styles.css";
 // import { confirm } from "./utils/alert";
 // import { loadAssets, saveAssets } from "./utils/localStorage";
@@ -787,6 +788,21 @@ function App() {
             onClick={handleLogout}
           >
             🚪 Đăng xuất
+          </button>
+          <button
+            onClick={async () => {
+              try {
+                await syncPublicAssets();
+                showToast("success", "Đã đồng bộ dữ liệu QR");
+              } catch (error) {
+                await showError(
+                  "Đồng bộ thất bại",
+                  error.message
+                );
+              }
+            }}
+          >
+            Đồng bộ dữ liệu QR
           </button>
           <button
             className="menu-btn"

@@ -14,6 +14,15 @@ import {
 } from "firebase/database";
 
 // Đọc realtime
+const createPublicAsset = (asset) => ({
+  code: asset.code || "",
+  name: asset.name || "",
+  company: asset.company || "",
+  user: asset.user || "",
+  status: asset.status || "Kho",
+  note: asset.note || "",
+  createdDate: asset.createdDate || "",
+});
 export const getAssets = (
   userProfile,
   callback
@@ -68,23 +77,51 @@ export const getAssets = (
 // };
 export const addAsset = async (asset) => {
   const newRef = push(ref(db, "assets"));
+  const firebaseId = newRef.key;
 
-  await set(newRef, {
+  if (!firebaseId) {
+    throw new Error("Không thể tạo Firebase ID.");
+  }
+
+  const assetData = {
     ...asset,
-    firebaseId: newRef.key,
+    firebaseId,
+  };
+
+  await update(ref(db), {
+    [`assets/${firebaseId}`]: assetData,
+    [`publicAssets/${firebaseId}`]: createPublicAsset(assetData),
   });
+
+  return firebaseId;
 };
 // Cập nhật
 export const updateAsset = async (asset) => {
-  await update(
-    ref(db, `assets/${asset.firebaseId}`),
-    asset
-  );
+  if (!asset.firebaseId) {
+    throw new Error("Tài sản không có Firebase ID.");
+  }
+
+  const assetData = {
+    ...asset,
+  };
+
+  await update(ref(db), {
+    [`assets/${asset.firebaseId}`]: assetData,
+    [`publicAssets/${asset.firebaseId}`]:
+      createPublicAsset(assetData),
+  });
 };
 
 // Xóa
 export const deleteAsset = async (firebaseId) => {
-  await remove(ref(db, `assets/${firebaseId}`));
+  if (!firebaseId) {
+    throw new Error("Firebase ID không hợp lệ.");
+  }
+
+  await update(ref(db), {
+    [`assets/${firebaseId}`]: null,
+    [`publicAssets/${firebaseId}`]: null,
+  });
 };
 
 // Import thêm
@@ -92,6 +129,41 @@ export const importAssets = async (assets) => {
   for (const asset of assets) {
     await push(ref(db, "assets"), asset);
   }
+};
+export const getPublicAsset = async (firebaseId) => {
+  if (!firebaseId) {
+    throw new Error("Firebase ID không hợp lệ.");
+  }
+
+  const snapshot = await get(
+    ref(db, `publicAssets/${firebaseId}`)
+  );
+
+  if (!snapshot.exists()) {
+    return null;
+  }
+
+  return {
+    firebaseId,
+    ...snapshot.val(),
+  };
+};
+export const syncPublicAssets = async () => {
+  const snapshot = await get(ref(db, "assets"));
+
+  if (!snapshot.exists()) {
+    throw new Error("Không có tài sản để đồng bộ.");
+  }
+
+  const assets = snapshot.val();
+  const updates = {};
+
+  Object.entries(assets).forEach(([firebaseId, asset]) => {
+    updates[`publicAssets/${firebaseId}`] =
+      createPublicAsset(asset);
+  });
+
+  await update(ref(db), updates);
 };
 
 // Ghi đè toàn bộ dữ liệu

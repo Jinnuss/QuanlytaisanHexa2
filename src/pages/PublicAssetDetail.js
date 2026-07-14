@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { get, ref } from "firebase/database";
 import { db } from "../firebase";
 import AuditLog from "../components/AuditLog";
+import { getPublicAsset } from "../assetService";
 
 function PublicAssetDetail() {
   const { firebaseId } = useParams();
@@ -17,22 +18,36 @@ function PublicAssetDetail() {
         setLoading(true);
         setError("");
 
-        const snapshot = await get(
-          ref(db, `assets/${firebaseId}`)
-        );
+        console.log("Firebase ID từ QR:", firebaseId);
 
-        if (!snapshot.exists()) {
-          setError("Không tìm thấy tài sản.");
+        const result = await getPublicAsset(firebaseId);
+
+        console.log("Dữ liệu QR nhận được:", result);
+
+        if (!result) {
+          setError(
+            "Không tìm thấy dữ liệu công khai của tài sản này."
+          );
           return;
         }
 
-        setAsset({
-          firebaseId,
-          ...snapshot.val(),
-        });
-      } catch (err) {
-        console.error("Lỗi tải tài sản:", err);
-        setError("Không thể tải thông tin tài sản.");
+        setAsset(result);
+      } catch (error) {
+        console.error("Lỗi tải tài sản QR:", error);
+
+        if (
+          error.code === "PERMISSION_DENIED" ||
+          error.message?.includes("Permission denied")
+        ) {
+          setError(
+            "Firebase đang chặn quyền xem thông tin QR."
+          );
+        } else {
+          setError(
+            error.message ||
+            "Không thể tải thông tin tài sản."
+          );
+        }
       } finally {
         setLoading(false);
       }
