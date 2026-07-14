@@ -22,6 +22,10 @@ const createPublicAsset = (asset) => ({
   status: asset.status || "Kho",
   note: asset.note || "",
   createdDate: asset.createdDate || "",
+
+  logs: Array.isArray(asset.logs)
+    ? asset.logs
+    : [],
 });
 export const getAssets = (
   userProfile,
