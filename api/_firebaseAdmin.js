@@ -1,34 +1,46 @@
-import admin from "firebase-admin";
+import {
+  cert,
+  getApps,
+  initializeApp,
+} from "firebase-admin/app";
+
+import { getAuth } from "firebase-admin/auth";
+import { getDatabase } from "firebase-admin/database";
 
 function getPrivateKey() {
-  const value = process.env.FIREBASE_ADMIN_PRIVATE_KEY;
+  const privateKey =
+    process.env.FIREBASE_ADMIN_PRIVATE_KEY;
 
-  if (!value) {
+  if (!privateKey) {
     throw new Error(
-      "Thiếu FIREBASE_ADMIN_PRIVATE_KEY."
+      "Thiếu biến FIREBASE_ADMIN_PRIVATE_KEY"
     );
   }
 
-  return value.replace(/\\n/g, "\n");
+  return privateKey.replace(/\\n/g, "\n");
 }
 
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert({
-      projectId:
-        process.env.FIREBASE_ADMIN_PROJECT_ID,
-      clientEmail:
-        process.env.FIREBASE_ADMIN_CLIENT_EMAIL,
-      privateKey: getPrivateKey(),
-    }),
+const adminApp =
+  getApps().length > 0
+    ? getApps()[0]
+    : initializeApp({
+        credential: cert({
+          projectId:
+            process.env.FIREBASE_ADMIN_PROJECT_ID,
 
-    databaseURL:
-      "https://quanlytaisan-235e5-default-rtdb.asia-southeast1.firebasedatabase.app",
-  });
-}
+          clientEmail:
+            process.env.FIREBASE_ADMIN_CLIENT_EMAIL,
 
-export const adminAuth = admin.auth();
-export const adminDb = admin.database();
+          privateKey: getPrivateKey(),
+        }),
+
+        databaseURL:
+          "https://quanlytaisan-235e5-default-rtdb.asia-southeast1.firebasedatabase.app",
+      });
+
+export const adminAuth = getAuth(adminApp);
+export const adminDb = getDatabase(adminApp);
+
 export async function requireAdmin(req) {
   const authorization =
     req.headers.authorization || "";
