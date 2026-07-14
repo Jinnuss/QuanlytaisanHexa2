@@ -6,29 +6,60 @@ import {
   update,
   remove,
   onValue,
-  set,
+  query,
+  orderByChild,
+  equalTo,
   get,
+  set
 } from "firebase/database";
 
 // Đọc realtime
-export const getAssets = (callback) => {
-  const assetsRef = ref(db, "assets");
+export const getAssets = (
+  userProfile,
+  callback
+) => {
+  if (!userProfile) {
+    callback([]);
+    return () => { };
+  }
 
-  onValue(assetsRef, (snapshot) => {
-    const data = snapshot.val();
+  const assetsSource =
+    userProfile.role === "admin"
+      ? ref(db, "assets")
+      : query(
+        ref(db, "assets"),
+        orderByChild("company"),
+        equalTo(userProfile.company)
+      );
 
-    if (!data) {
+  return onValue(
+    assetsSource,
+    (snapshot) => {
+      const data = snapshot.val();
+
+      if (!data) {
+        callback([]);
+        return;
+      }
+
+      const assets = Object.entries(data).map(
+        ([key, value]) => ({
+          ...value,
+          firebaseId: key,
+        })
+      );
+
+      callback(assets);
+    },
+    (error) => {
+      console.error(
+        "Lỗi đọc tài sản:",
+        error
+      );
+
       callback([]);
-      return;
     }
-
-    const assets = Object.entries(data).map(([key, value]) => ({
-      ...value,
-      firebaseId: key,
-    }));
-
-    callback(assets);
-  });
+  );
 };
 
 // Thêm

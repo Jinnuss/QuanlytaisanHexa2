@@ -1,0 +1,84 @@
+import { auth } from "./firebase";
+
+async function getAuthorizationHeader() {
+  const currentUser = auth.currentUser;
+
+  if (!currentUser) {
+    throw new Error(
+      "Bạn chưa đăng nhập."
+    );
+  }
+
+  const idToken =
+    await currentUser.getIdToken();
+
+  return {
+    Authorization: `Bearer ${idToken}`,
+    "Content-Type": "application/json",
+  };
+}
+
+async function parseResponse(response) {
+  const contentType =
+    response.headers.get("content-type") || "";
+
+  if (!contentType.includes("application/json")) {
+    const text = await response.text();
+
+    console.error("API trả về không phải JSON:", text);
+
+    throw new Error(
+      "API quản lý tài khoản chưa hoạt động. Hãy chạy bằng `vercel dev` hoặc kiểm tra lại cấu hình Vercel."
+    );
+  }
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      result.message || "Yêu cầu không thành công."
+    );
+  }
+
+  return result;
+}
+
+export async function createEmployeeAccount(
+  data
+) {
+  const headers =
+    await getAuthorizationHeader();
+
+  const response = await fetch(
+    "/api/admin/create-user",
+    {
+      method: "POST",
+      headers,
+      body: JSON.stringify(data),
+    }
+  );
+
+  return parseResponse(response);
+}
+
+export async function changeEmployeePassword(
+  uid,
+  newPassword
+) {
+  const headers =
+    await getAuthorizationHeader();
+
+  const response = await fetch(
+    "/api/admin/change-password",
+    {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        uid,
+        newPassword,
+      }),
+    }
+  );
+
+  return parseResponse(response);
+}

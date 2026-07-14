@@ -6,6 +6,8 @@ function AssetList({
   onDelete,
   onSelect,
   onShowQR,
+  canEdit,
+  canDelete,
 }) {
   return (
     <table>
@@ -66,11 +68,22 @@ function AssetList({
                   🔍
                 </button>
 
-                <button className=" icon-btn edit-btn" onClick={() => onEdit(asset)}>
-                  ✏️
-                </button>
+                {
+                  canEdit && (
+                    <button title="Sửa" className=" icon-btn edit-btn" onClick={() => onEdit(asset)}>
+                      ✏️
+                    </button>
+                  )
+                }
+                {
+                  canDelete && (
+                    <button title="Sửa" className=" icon-btn edit-btn" onClick={() => onEdit(asset)}>
+                      ✏️
+                    </button>
+                  )
+                }
 
-                <button className="icon-btn delete-btn"
+                <button title="Xóa" className="icon-btn delete-btn"
                   onClick={() => {
                     console.log(asset);
                     console.log(asset.firebaseId);

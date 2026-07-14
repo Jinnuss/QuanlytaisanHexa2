@@ -9,6 +9,7 @@
     "@testing-library/user-event": "^13.5.0",
     "file-saver": "^2.0.5",
     "firebase": "^12.15.0",
+    "firebase-admin": "^14.1.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-qr-code": "^2.2.0",
