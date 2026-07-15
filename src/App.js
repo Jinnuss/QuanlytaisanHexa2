@@ -14,6 +14,9 @@ import QRCodeModal from "./components/QRCodeModal";
 import CreateAccountForm from "./components/CreateAccountForm";
 import { syncPublicAssets } from "./assetService";
 import "./styles.css";
+import {
+  validateAssetDuplicates,
+} from "./assetService";
 // import { confirm } from "./utils/alert";
 // import { loadAssets, saveAssets } from "./utils/localStorage";
 import { getAssets } from "./assetService";
@@ -71,28 +74,89 @@ function App() {
     showCreateAccountModal,
     setShowCreateAccountModal,
   ] = useState(false);
+  // const addAsset = async (asset) => {
+  //   if (!isAdmin) {
+  //     await showError(
+  //       "Không có quyền",
+  //       "Bạn không có quyền thêm tài sản."
+  //     );
+
+  //     return;
+  //   }
+
+  //   try {
+  //     await addAssetFirebase({
+  //       ...asset,
+
+  //       createdDate:
+  //         asset.createdDate ||
+  //         new Date().toISOString().split("T")[0],
+
+  //       logs: [
+  //         {
+  //           action: "Khởi tạo tài sản",
+  //           date: new Date().toLocaleString("vi-VN"),
+  //           detail: `Tạo bởi ${userProfile?.name ||
+  //             currentUser?.email ||
+  //             "Admin"
+  //             }`,
+  //         },
+  //       ],
+  //     });
+
+  //     showToast(
+  //       "success",
+  //       "Thêm tài sản thành công"
+  //     );
+  //   } catch (error) {
+  //     console.error(
+  //       "Lỗi thêm tài sản:",
+  //       error
+  //     );
+
+  //     await showError(
+  //       "Không thể thêm tài sản",
+  //       error.message ||
+  //       "Đã xảy ra lỗi khi lưu dữ liệu."
+  //     );
+  //   }
+  // };
   const addAsset = async (asset) => {
     if (!isAdmin) {
       await showError(
         "Không có quyền",
         "Bạn không có quyền thêm tài sản."
       );
-
       return;
     }
 
     try {
+      const duplicateResult =
+        await validateAssetDuplicates(asset);
+
+      if (!duplicateResult.valid) {
+        await showError(
+          "Dữ liệu đã tồn tại",
+          duplicateResult.message
+        );
+        return;
+      }
+
       await addAssetFirebase({
         ...asset,
 
         createdDate:
           asset.createdDate ||
-          new Date().toISOString().split("T")[0],
+          new Date()
+            .toISOString()
+            .split("T")[0],
 
         logs: [
           {
             action: "Khởi tạo tài sản",
-            date: new Date().toLocaleString("vi-VN"),
+            date: new Date().toLocaleString(
+              "vi-VN"
+            ),
             detail: `Tạo bởi ${userProfile?.name ||
               currentUser?.email ||
               "Admin"
@@ -455,6 +519,19 @@ function App() {
     );
 
     if (!oldAsset) return;
+    const duplicateResult =
+      await validateAssetDuplicates(
+        updatedAsset,
+        updatedAsset.firebaseId
+      );
+
+    if (!duplicateResult.valid) {
+      await showError(
+        "Dữ liệu đã tồn tại",
+        duplicateResult.message
+      );
+      return;
+    }
 
     const logs = Array.isArray(oldAsset.logs)
       ? [...oldAsset.logs]
@@ -747,6 +824,34 @@ function App() {
   // const canExport = isAdmin;
   // const canClearAll = isAdmin;
   // const canManageAccounts = isAdmin;
+  const validateImportedAssets = async (
+    importedAssets
+  ) => {
+    for (let index = 0; index <
+      importedAssets.length;
+      index++
+    ) {
+      const asset =
+        importedAssets[index];
+
+      const result =
+        await validateAssetDuplicates(
+          asset
+        );
+
+      if (!result.valid) {
+        return {
+          valid: false,
+          row: index + 2,
+          message: result.message,
+        };
+      }
+    }
+
+    return {
+      valid: true,
+    };
+  };
   return (
 
     <div className="container">
@@ -900,28 +1005,32 @@ function App() {
                 importAssetsFromExcel(
                   file,
                   async (newAssets) => {
-                    if (!isAdmin) {
-                      await showError(
-                        "Không có quyền",
-                        "Chỉ Admin được import dữ liệu."
-                      );
-                      return;
-                    }
-
                     try {
-                      await replaceAllAssets(newAssets);
+                      const validation =
+                        await validateImportedAssets(
+                          newAssets
+                        );
+
+                      if (!validation.valid) {
+                        await showError(
+                          `Lỗi tại dòng ${validation.row}`,
+                          validation.message
+                        );
+                        return;
+                      }
+
+                      await replaceAllAssets(
+                        newAssets
+                      );
 
                       await showSuccess(
                         "Import thành công",
                         `Đã nhập ${newAssets.length} tài sản.`
                       );
                     } catch (error) {
-                      console.error("Lỗi import:", error);
-
                       await showError(
                         "Import thất bại",
-                        error.message ||
-                        "Không thể ghi dữ liệu lên Firebase."
+                        error.message
                       );
                     }
                   }

@@ -10,6 +10,10 @@ import {
   equalTo,
   get,
 } from "firebase/database";
+import {
+  normalizeAssetCode,
+  normalizeIpAddress,
+} from "./utils/normalize";
 
 // Đọc realtime
 const createPublicAsset = (asset) => ({
@@ -25,6 +29,116 @@ const createPublicAsset = (asset) => ({
     ? asset.logs
     : [],
 });
+export const findAssetByCode = async (code) => {
+  const normalizedCode = normalizeAssetCode(code);
+
+  if (!normalizedCode) {
+    return null;
+  }
+
+  const snapshot = await get(ref(db, "assets"));
+
+  if (!snapshot.exists()) {
+    return null;
+  }
+
+  const data = snapshot.val();
+
+  const foundEntry = Object.entries(data).find(
+    ([, asset]) =>
+      normalizeAssetCode(asset.code) === normalizedCode
+  );
+
+  if (!foundEntry) {
+    return null;
+  }
+
+  const [firebaseId, asset] = foundEntry;
+
+  return {
+    firebaseId,
+    ...asset,
+  };
+};
+
+export const findAssetByIp = async (ipAddress) => {
+  const normalizedIp = normalizeIpAddress(ipAddress);
+
+  // Không nhập IP thì không kiểm tra trùng
+  if (!normalizedIp) {
+    return null;
+  }
+
+  const snapshot = await get(ref(db, "assets"));
+
+  if (!snapshot.exists()) {
+    return null;
+  }
+
+  const data = snapshot.val();
+
+  const foundEntry = Object.entries(data).find(
+    ([, asset]) =>
+      normalizeIpAddress(asset.ipAddress) === normalizedIp
+  );
+
+  if (!foundEntry) {
+    return null;
+  }
+
+  const [firebaseId, asset] = foundEntry;
+
+  return {
+    firebaseId,
+    ...asset,
+  };
+};
+export const validateAssetDuplicates = async (
+  asset,
+  currentFirebaseId = null
+) => {
+  const duplicateCode = await findAssetByCode(asset.code);
+
+  if (
+    duplicateCode &&
+    duplicateCode.firebaseId !== currentFirebaseId
+  ) {
+    return {
+      valid: false,
+      field: "code",
+      message: `Mã tài sản "${asset.code}" đã tồn tại.`,
+      duplicateAsset: duplicateCode,
+    };
+  }
+
+  const normalizedIp = normalizeIpAddress(
+    asset.ipAddress
+  );
+
+  if (normalizedIp) {
+    const duplicateIp = await findAssetByIp(
+      normalizedIp
+    );
+
+    if (
+      duplicateIp &&
+      duplicateIp.firebaseId !== currentFirebaseId
+    ) {
+      return {
+        valid: false,
+        field: "ipAddress",
+        message:
+          `Địa chỉ IP "${normalizedIp}" đang được sử dụng bởi ` +
+          `${duplicateIp.code || "một tài sản khác"}.`,
+        duplicateAsset: duplicateIp,
+      };
+    }
+  }
+
+  return {
+    valid: true,
+  };
+};
 export const getAssets = (
   userProfile,
   callback
@@ -88,11 +202,16 @@ export const addAsset = async (asset) => {
   const assetData = {
     ...asset,
     firebaseId,
+    code: normalizeAssetCode(asset.code),
+    ipAddress: normalizeIpAddress(
+      asset.ipAddress
+    ),
   };
 
   await update(ref(db), {
     [`assets/${firebaseId}`]: assetData,
-    [`publicAssets/${firebaseId}`]: createPublicAsset(assetData),
+    [`publicAssets/${firebaseId}`]:
+      createPublicAsset(assetData),
   });
 
   return firebaseId;
@@ -100,15 +219,23 @@ export const addAsset = async (asset) => {
 // Cập nhật
 export const updateAsset = async (asset) => {
   if (!asset.firebaseId) {
-    throw new Error("Tài sản không có Firebase ID.");
+    throw new Error(
+      "Tài sản không có Firebase ID."
+    );
   }
 
   const assetData = {
     ...asset,
+    code: normalizeAssetCode(asset.code),
+    ipAddress: normalizeIpAddress(
+      asset.ipAddress
+    ),
   };
 
   await update(ref(db), {
-    [`assets/${asset.firebaseId}`]: assetData,
+    [`assets/${asset.firebaseId}`]:
+      assetData,
+
     [`publicAssets/${asset.firebaseId}`]:
       createPublicAsset(assetData),
   });

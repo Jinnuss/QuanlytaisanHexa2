@@ -71,6 +71,23 @@ export default async function handler(req, res) {
           "Vui lòng chọn công ty.",
       });
     }
+    try {
+      await adminAuth.getUserByEmail(
+        normalizedEmail
+      );
+
+      return res.status(409).json({
+        message:
+          "Email này đã được sử dụng bởi một tài khoản khác.",
+      });
+    } catch (lookupError) {
+      if (
+        lookupError?.code !==
+        "auth/user-not-found"
+      ) {
+        throw lookupError;
+      }
+    }
 
     const newUser =
       await adminAuth.createUser({

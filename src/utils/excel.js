@@ -1,6 +1,9 @@
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
-
+import {
+    normalizeAssetCode,
+    normalizeIpAddress,
+} from "./normalize";
 export const exportAssetsToExcel = (assets) => {
     const data = assets.map(asset => ({
         "Mã tài sản": asset.code,
@@ -55,11 +58,62 @@ export const importAssetsFromExcel = (file, callback) => {
             user: item["Người sử dụng"] || "",
             price: Number(item["Giá tiền"]) || 0,
             note: item["Ghi chú"] || "",
+            ipAddress: normalizeIpAddress(
+                item["Địa chỉ IP"] ||
+                item["IP"] ||
+                ""
+            ),
             status: item["Người sử dụng"] ? "Đang cấp phát" : "Kho",
             logs: []
         }));
+        const duplicateCodes = new Set();
+        const duplicateIps = new Set();
+
+        const seenCodes = new Set();
+        const seenIps = new Set();
+
+        assets.forEach((asset) => {
+            const code = normalizeAssetCode(
+                asset.code
+            );
+
+            const ip = normalizeIpAddress(
+                asset.ipAddress
+            );
+
+            if (seenCodes.has(code)) {
+                duplicateCodes.add(code);
+            } else {
+                seenCodes.add(code);
+            }
+
+            if (ip) {
+                if (seenIps.has(ip)) {
+                    duplicateIps.add(ip);
+                } else {
+                    seenIps.add(ip);
+                }
+            }
+        });
+
+        if (duplicateCodes.size > 0) {
+            throw new Error(
+                `File Excel có mã tài sản bị trùng: ${[
+                    ...duplicateCodes,
+                ].join(", ")}`
+            );
+        }
+
+        if (duplicateIps.size > 0) {
+            throw new Error(
+                `File Excel có địa chỉ IP bị trùng: ${[
+                    ...duplicateIps,
+                ].join(", ")}`
+            );
+        }
+
         callback(assets);
-        
+
 
     };
 
