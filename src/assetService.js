@@ -4,13 +4,11 @@ import {
   ref,
   push,
   update,
-  remove,
   onValue,
   query,
   orderByChild,
   equalTo,
   get,
-  set
 } from "firebase/database";
 
 // Đọc realtime
@@ -22,7 +20,7 @@ const createPublicAsset = (asset) => ({
   status: asset.status || "Kho",
   note: asset.note || "",
   createdDate: asset.createdDate || "",
-
+  ipAddress: asset.ipAddress || "",
   logs: Array.isArray(asset.logs)
     ? asset.logs
     : [],
@@ -172,18 +170,35 @@ export const syncPublicAssets = async () => {
 
 // Ghi đè toàn bộ dữ liệu
 export const replaceAllAssets = async (assets) => {
-  const result = {};
+  const assetsResult = {};
+  const publicAssetsResult = {};
 
   assets.forEach((asset) => {
-    result[crypto.randomUUID()] = asset;
+    const firebaseId = crypto.randomUUID();
+
+    const assetData = {
+      ...asset,
+      firebaseId,
+      logs: Array.isArray(asset.logs) ? asset.logs : [],
+    };
+
+    assetsResult[firebaseId] = assetData;
+    publicAssetsResult[firebaseId] =
+      createPublicAsset(assetData);
   });
 
-  await set(ref(db, "assets"), result);
+  await update(ref(db), {
+    assets: assetsResult,
+    publicAssets: publicAssetsResult,
+  });
 };
 
 // Xóa toàn bộ
 export const clearAssets = async () => {
-  await remove(ref(db, "assets"));
+  await update(ref(db), {
+    assets: null,
+    publicAssets: null,
+  });
 };
 
 export const getNextAssetNumber = async (prefix) => {

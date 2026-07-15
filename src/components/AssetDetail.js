@@ -31,6 +31,10 @@ function AssetDetail({ asset }) {
       <p>
         <strong>Ghi chú:</strong> {asset.note}
       </p>
+      <p>
+        <strong>Địa chỉ IP:</strong>{" "}
+        {asset.ipAddress || "Chưa có"}
+      </p>
 
       <AuditLog logs={asset.logs || []} />
 

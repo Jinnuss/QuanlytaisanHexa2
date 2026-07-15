@@ -36,7 +36,7 @@ function AssetList({
 
       <tbody>
         {assets.map((asset) => (
-          <tr key={asset.firebaseId}>
+          <tr key={asset.firebaseId} className="asset-row">
             <td>{asset.code}</td>
             <td>{asset.name}</td>
             <td>{asset.company}</td>

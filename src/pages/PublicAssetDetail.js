@@ -102,7 +102,10 @@ function PublicAssetDetail() {
             <span>Công ty</span>
             <strong>{asset.company || "—"}</strong>
           </div>
-
+          <div className="public-field">
+            <span>Địa chỉ IP</span>
+            <strong>{asset.ipAddress || "Chưa có"}</strong>
+          </div>
           <div className="public-field">
             <span>Người sử dụng</span>
             <strong>{asset.user || "Chưa cấp phát"}</strong>

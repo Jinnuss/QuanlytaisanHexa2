@@ -171,28 +171,67 @@ function App() {
   //   localStorage.removeItem("assets");
   //   setAssets([]);
   // };
+  // const clearData = async () => {
+  //   if (!isAdmin) {
+  //     await showError(
+  //       "Không có quyền",
+  //       "Chỉ Admin được xóa toàn bộ dữ liệu."
+  //     );
+
+  //     return;
+  //   }
+
+  //   const result = await showConfirm({
+  //     title: "Xóa toàn bộ dữ liệu",
+  //     text: "Tất cả tài sản sẽ bị xóa và không thể khôi phục.",
+  //     confirmText: "Xóa toàn bộ",
+  //     cancelText: "Hủy",
+  //     icon: "warning",
+  //     danger: true,
+  //   });
+
+  //   if (!result.isConfirmed) {
+  //     return;
+  //   }
+
+  //   try {
+  //     await clearAssets();
+
+  //     showToast(
+  //       "success",
+  //       "Đã xóa toàn bộ dữ liệu"
+  //     );
+  //   } catch (error) {
+  //     console.error(
+  //       "Lỗi xóa dữ liệu:",
+  //       error
+  //     );
+
+  //     await showError(
+  //       "Không thể xóa dữ liệu",
+  //       error.message
+  //     );
+  //   }
+  // };
   const clearData = async () => {
     if (!isAdmin) {
       await showError(
         "Không có quyền",
         "Chỉ Admin được xóa toàn bộ dữ liệu."
       );
-
       return;
     }
 
     const result = await showConfirm({
       title: "Xóa toàn bộ dữ liệu",
-      text: "Tất cả tài sản sẽ bị xóa và không thể khôi phục.",
+      text: "Tất cả tài sản và dữ liệu QR sẽ bị xóa.",
       confirmText: "Xóa toàn bộ",
       cancelText: "Hủy",
       icon: "warning",
       danger: true,
     });
 
-    if (!result.isConfirmed) {
-      return;
-    }
+    if (!result.isConfirmed) return;
 
     try {
       await clearAssets();
@@ -202,14 +241,12 @@ function App() {
         "Đã xóa toàn bộ dữ liệu"
       );
     } catch (error) {
-      console.error(
-        "Lỗi xóa dữ liệu:",
-        error
-      );
+      console.error("Lỗi xóa dữ liệu:", error);
 
       await showError(
         "Không thể xóa dữ liệu",
-        error.message
+        error.message ||
+        "Firebase đã từ chối thao tác."
       );
     }
   };
@@ -488,6 +525,17 @@ function App() {
         action: "Thay đổi trạng thái",
         date: now,
         detail: `${oldAsset.status || "Trống"} → ${updatedAsset.status || "Trống"
+          }`,
+      });
+    }
+    if (
+      (oldAsset.ipAddress || "") !==
+      (updatedAsset.ipAddress || "")
+    ) {
+      logs.push({
+        action: "Thay đổi địa chỉ IP",
+        date: now,
+        detail: `${oldAsset.ipAddress || "Chưa có"} → ${updatedAsset.ipAddress || "Chưa có"
           }`,
       });
     }
@@ -789,7 +837,26 @@ function App() {
           >
             🚪 Đăng xuất
           </button>
-          <button
+
+          {
+            isAdmin &&
+            <button
+              onClick={async () => {
+                try {
+                  await syncPublicAssets();
+                  showToast("success", "Đã đồng bộ dữ liệu QR");
+                } catch (error) {
+                  await showError(
+                    "Đồng bộ thất bại",
+                    error.message
+                  );
+                }
+              }}
+            >
+              Đồng bộ dữ liệu QR
+            </button>
+          }
+          {/* <button
             onClick={async () => {
               try {
                 await syncPublicAssets();
@@ -803,13 +870,20 @@ function App() {
             }}
           >
             Đồng bộ dữ liệu QR
-          </button>
-          <button
+          </button> */}
+          {isAdmin &&
+            <button
+              className="menu-btn"
+              onClick={() => setShowMenu(!showMenu)}
+            >
+              ☰ Menu
+            </button>}
+          {/* <button
             className="menu-btn"
             onClick={() => setShowMenu(!showMenu)}
           >
             ☰ Menu
-          </button>
+          </button> */}
 
           <div className={`dropdown-menu ${showMenu ? "show" : ""}`}>
             <button className="primary-btn" onClick={() => setShowAddModal(true)}>
@@ -823,9 +897,35 @@ function App() {
             <Toolbar
               onExport={() => exportAssetsToExcel(assets)}
               onImport={(file) =>
-                importAssetsFromExcel(file, async (newAssets) => {
-                  await replaceAllAssets(newAssets);
-                })
+                importAssetsFromExcel(
+                  file,
+                  async (newAssets) => {
+                    if (!isAdmin) {
+                      await showError(
+                        "Không có quyền",
+                        "Chỉ Admin được import dữ liệu."
+                      );
+                      return;
+                    }
+
+                    try {
+                      await replaceAllAssets(newAssets);
+
+                      await showSuccess(
+                        "Import thành công",
+                        `Đã nhập ${newAssets.length} tài sản.`
+                      );
+                    } catch (error) {
+                      console.error("Lỗi import:", error);
+
+                      await showError(
+                        "Import thất bại",
+                        error.message ||
+                        "Không thể ghi dữ liệu lên Firebase."
+                      );
+                    }
+                  }
+                )
               }
             />
 

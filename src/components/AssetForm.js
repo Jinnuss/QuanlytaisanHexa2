@@ -10,11 +10,16 @@ function AssetForm({ onSubmit, editingAsset }) {
     price: "",
     note: "",
     status: "Kho",
+    ipAddress: "",
   });
 
   useEffect(() => {
     if (editingAsset) {
-      setForm(editingAsset);
+      setForm({
+        ...editingAsset,
+        ipAddress: editingAsset.ipAddress || "",
+        createdDate: editingAsset.createdDate || "",
+      });
     }
   }, [editingAsset]);
 
@@ -24,7 +29,7 @@ function AssetForm({ onSubmit, editingAsset }) {
       [e.target.name]: e.target.value,
     });
   };
-
+  
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -39,6 +44,7 @@ function AssetForm({ onSubmit, editingAsset }) {
       price: "",
       note: "",
       status: "Kho",
+
     });
   };
 
@@ -104,6 +110,14 @@ function AssetForm({ onSubmit, editingAsset }) {
         <option className="size">Kho</option>
         <option className="size">Đang cấp phát</option>
       </select>
+
+      <input
+        type="text"
+        name="ipAddress"
+        placeholder="IP Ví dụ: 192.168.1.100"
+        value={form.ipAddress || ""}
+        onChange={handleChange}
+      />
 
       <button type="submit">
         {editingAsset ? "Cập nhật" : "Thêm"}
