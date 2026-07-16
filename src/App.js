@@ -973,13 +973,19 @@ function App() {
       </div>
       {isAdmin && (
         <button
+          className="menu-action-btn account-menu-btn create-account-top-btn"
           onClick={() => {
             setShowMenu(false);
             setShowCreateAccountModal(true);
           }}
         >
-          👤 Tạo tài khoản
+          <span className="menu-action-icon">♙</span>
+
+          <span className="menu-action-text">
+            Tạo tài khoản
+          </span>
         </button>
+
       )}
       {isAdmin &&
         showCreateAccountModal && (
@@ -1059,6 +1065,7 @@ function App() {
           {
             isAdmin &&
             <button
+              className="special-btn sync-data-btn"
               onClick={async () => {
                 try {
                   await syncPublicAssets();
@@ -1071,8 +1078,14 @@ function App() {
                 }
               }}
             >
-              Đồng bộ dữ liệu QR
+              <span className="special-btn-icon">⟳</span>
+
+              <span className="special-btn-content">
+                <strong>Đồng bộ QR</strong>
+                <small>Cập nhật dữ liệu quét mã</small>
+              </span>
             </button>
+
           }
           {/* <button
             onClick={async () => {
@@ -1155,15 +1168,21 @@ function App() {
               🗑 Xóa dữ liệu
             </button>
             <button
+              className="menu-action-btn trash-menu-btn"
               onClick={() => {
                 setShowMenu(false);
                 setShowTrashModal(true);
               }}
             >
-              🗑️ Thùng rác 
+              <span className="menu-action-icon">🗑️</span>
+
+              <span className="menu-action-text">
+                Thùng rác
+              </span>
+
               {trashAssets.length > 0 && (
-                <span className="trash-count">
-                   -{trashAssets.length}
+                <span className="trash-menu-count">
+                  {trashAssets.length}
                 </span>
               )}
             </button>
