@@ -82,3 +82,61 @@ export async function changeEmployeePassword(
 
   return parseResponse(response);
 }
+export async function getAccounts() {
+  const headers =
+    await getAuthorizationHeader();
+
+  const response = await fetch(
+    "/api/admin/list-users",
+    {
+      method: "GET",
+      headers,
+    }
+  );
+
+  return parseResponse(response);
+}
+
+export async function toggleAccountStatus(
+  uid,
+  enabled
+) {
+  const headers =
+    await getAuthorizationHeader();
+
+  const response = await fetch(
+    "/api/admin/toggle-user-status",
+    {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        uid,
+        enabled,
+      }),
+    }
+  );
+
+  return parseResponse(response);
+}
+
+export async function updateAccountCompany(
+  uid,
+  company
+) {
+  const headers =
+    await getAuthorizationHeader();
+
+  const response = await fetch(
+    "/api/admin/update-user-company",
+    {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        uid,
+        company,
+      }),
+    }
+  );
+
+  return parseResponse(response);
+}

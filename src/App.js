@@ -14,6 +14,8 @@ import QRCodeModal from "./components/QRCodeModal";
 import CreateAccountForm from "./components/CreateAccountForm";
 import { syncPublicAssets } from "./assetService";
 import "./styles.css";
+import AccountManagementModal
+  from "./components/AccountManagementModal";
 import TrashModal from "./components/TrashModel";
 import {
   validateAssetDuplicates,
@@ -83,6 +85,10 @@ function App() {
   const [
     showCreateAccountModal,
     setShowCreateAccountModal,
+  ] = useState(false);
+  const [
+    showAccountManagement,
+    setShowAccountManagement,
   ] = useState(false);
   // khôi phục 
   const handleRestoreAsset = async (asset) => {
@@ -1124,6 +1130,21 @@ function App() {
             <button className="success-btn" onClick={() => setShowBulkModal(true)}>
               📥 Nhập kho hàng loạt
             </button>
+            <button
+              className="menu-action-btn account-manage-btn"
+              onClick={() => {
+                setShowMenu(false);
+                setShowAccountManagement(true);
+              }}
+            >
+              <span className="menu-action-icon">
+                👥
+              </span>
+
+              <span className="menu-action-text">
+                Quản lý tài khoản
+              </span>
+            </button>
 
             <Toolbar
               onExport={() => exportAssetsToExcel(assets)}
@@ -1275,6 +1296,14 @@ function App() {
           onClearTrash={handleClearTrash}
           onClose={() =>
             setShowTrashModal(false)
+          }
+        />
+      )}
+      {isAdmin && showAccountManagement && (
+        <AccountManagementModal
+          currentUserUid={currentUser?.uid}
+          onClose={() =>
+            setShowAccountManagement(false)
           }
         />
       )}
