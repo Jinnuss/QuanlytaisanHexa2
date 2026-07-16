@@ -28,16 +28,21 @@ async function parseResponse(response) {
     console.error("API trả về không phải JSON:", text);
 
     throw new Error(
-      "API quản lý tài khoản chưa hoạt động. Hãy chạy bằng `vercel dev` hoặc kiểm tra lại cấu hình Vercel."
+      "API quản lý tài khoản không hoạt động đúng."
     );
   }
 
   const result = await response.json();
 
   if (!response.ok) {
-    throw new Error(
+    const error = new Error(
       result.message || "Yêu cầu không thành công."
     );
+
+    error.status = response.status;
+    error.code = result.errorCode;
+
+    throw error;
   }
 
   return result;

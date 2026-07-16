@@ -2,10 +2,12 @@ import React, { useState } from "react";
 import {
   changeEmployeePassword,
 } from "../accountService";
+import { showSuccess } from "../utils/alert";
 
 function ChangePasswordForm({
   account,
   onSuccess,
+  onClose
 }) {
   const [newPassword, setNewPassword] =
     useState("");
@@ -24,12 +26,18 @@ function ChangePasswordForm({
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (
-      newPassword !== confirmPassword
-    ) {
-      setError(
-        "Mật khẩu xác nhận không khớp."
-      );
+    if (!newPassword) {
+      setError("Vui lòng nhập mật khẩu mới.");
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      setError("Mật khẩu phải có ít nhất 6 ký tự.");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setError("Hai mật khẩu không khớp.");
       return;
     }
 
@@ -42,15 +50,23 @@ function ChangePasswordForm({
         newPassword
       );
 
-      alert(
-        "Đổi mật khẩu thành công."
+      await showSuccess(
+        "Đổi mật khẩu thành công",
+        `Mật khẩu của ${account.email} đã được cập nhật.`
       );
+
+      setNewPassword("");
+      setConfirmPassword("");
 
       if (onSuccess) {
         onSuccess();
       }
-    } catch (err) {
-      setError(err.message);
+    } catch (error) {
+      console.error("Lỗi đổi mật khẩu:", error);
+
+      setError(
+        error.message || "Không thể đổi mật khẩu."
+      );
     } finally {
       setLoading(false);
     }
@@ -61,61 +77,115 @@ function ChangePasswordForm({
       className="account-form"
       onSubmit={handleSubmit}
     >
-      <p>
-        Tài khoản:{" "}
-        <strong>
-          {account.email}
-        </strong>
-      </p>
-
-      <div className="form-group">
-        <label>Mật khẩu mới</label>
-
-        <input
-          type="password"
-          value={newPassword}
-          onChange={(event) =>
-            setNewPassword(
-              event.target.value
-            )
-          }
-          minLength={6}
-          required
-        />
-      </div>
-
-      <div className="form-group">
-        <label>
-          Xác nhận mật khẩu mới
-        </label>
-
-        <input
-          type="password"
-          value={confirmPassword}
-          onChange={(event) =>
-            setConfirmPassword(
-              event.target.value
-            )
-          }
-          minLength={6}
-          required
-        />
-      </div>
-
-      {error && (
-        <div className="account-error">
-          {error}
-        </div>
-      )}
-
-      <button
-        type="submit"
-        disabled={loading}
+      <div
+        className="password-modal-overlay"
+        onClick={onClose}
       >
-        {loading
-          ? "Đang cập nhật..."
-          : "Đổi mật khẩu"}
-      </button>
+        <form
+          className="password-modal"
+          onSubmit={handleSubmit}
+          onClick={(event) =>
+            event.stopPropagation()
+          }
+        >
+          <div className="password-modal-header">
+            <div className="password-title-group">
+              <div className="password-icon">
+                🔑
+              </div>
+
+              <div>
+                <h2>Đổi mật khẩu</h2>
+                <p>
+                  Đặt mật khẩu đăng nhập mới cho nhân viên
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              className="password-close-button"
+              onClick={onClose}
+              aria-label="Đóng"
+            >
+              ×
+            </button>
+          </div>
+
+          <div className="password-modal-body">
+            <div className="password-account-card">
+              <span>Tài khoản</span>
+              <strong>{account.email}</strong>
+            </div>
+
+            <div className="password-field">
+              <label htmlFor="new-password">
+                Mật khẩu mới
+              </label>
+
+              <input
+                id="new-password"
+                type="password"
+                value={newPassword}
+                onChange={(event) =>
+                  setNewPassword(event.target.value)
+                }
+                placeholder="Tối thiểu 6 ký tự"
+                autoComplete="new-password"
+                minLength={6}
+                required
+              />
+            </div>
+
+            <div className="password-field">
+              <label htmlFor="confirm-new-password">
+                Xác nhận mật khẩu mới
+              </label>
+
+              <input
+                id="confirm-new-password"
+                type="password"
+                value={confirmPassword}
+                onChange={(event) =>
+                  setConfirmPassword(event.target.value)
+                }
+                placeholder="Nhập lại mật khẩu mới"
+                autoComplete="new-password"
+                minLength={6}
+                required
+              />
+            </div>
+
+            {error && (
+              <div className="password-error">
+                <span>!</span>
+                <p>{error}</p>
+              </div>
+            )}
+          </div>
+
+          <div className="password-modal-footer">
+            <button
+              type="button"
+              className="password-cancel-button"
+              onClick={onClose}
+              disabled={loading}
+            >
+              Hủy
+            </button>
+
+            <button
+              type="submit"
+              className="password-submit-button"
+              disabled={loading}
+            >
+              {loading
+                ? "Đang cập nhật..."
+                : "Đổi mật khẩu"}
+            </button>
+          </div>
+        </form>
+      </div>
     </form>
   );
 }

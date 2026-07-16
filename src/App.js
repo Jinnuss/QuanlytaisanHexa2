@@ -1138,7 +1138,7 @@ function App() {
               }}
             >
               <span className="menu-action-icon">
-                👥
+                🧛‍♀️
               </span>
 
               <span className="menu-action-text">
