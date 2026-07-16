@@ -1961,3 +1961,313 @@ body {
     transform: translateX(5px);
   }
 }
+/* Overlay riêng cho thùng rác */
+.trash-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 12000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 24px;
+
+  background: rgba(15, 23, 42, 0.68);
+  backdrop-filter: blur(7px);
+}
+
+/* Khung thùng rác */
+.trash-modal {
+  position: relative;
+
+  width: min(94vw, 920px);
+  max-height: 86vh;
+  overflow-y: auto;
+
+  padding: 0;
+
+  background: #ffffff;
+  border: 1px solid #dbe3ee;
+  border-radius: 24px;
+
+  box-shadow:
+    0 30px 90px rgba(15, 23, 42, 0.38);
+
+  animation: trashModalOpen 0.25s ease;
+}
+
+@keyframes trashModalOpen {
+  from {
+    opacity: 0;
+    transform: translateY(-18px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.trash-header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 22px 26px;
+
+  background: linear-gradient(
+    135deg,
+    #0f4c81,
+    #164e63
+  );
+
+  border-radius: 24px 24px 0 0;
+  color: #ffffff;
+}
+
+.trash-header h2 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 24px;
+}
+
+.trash-header p {
+  margin: 5px 0 0;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 13px;
+}
+
+.trash-header .modal-close {
+  width: 40px;
+  height: 40px;
+
+  display: grid;
+  place-items: center;
+
+  margin: 0;
+  padding: 0;
+
+  border-radius: 50%;
+  background: #ef4444;
+  color: #ffffff;
+
+  font-size: 22px;
+}
+
+.trash-header .modal-close:hover {
+  background: #dc2626;
+}
+
+.trash-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+
+  margin: 0;
+  padding: 18px 26px;
+
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+
+  color: #64748b;
+  font-size: 14px;
+}
+
+.trash-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  padding: 22px 26px 28px;
+  background: #f8fafc;
+}
+.trash-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+
+  padding: 18px 20px;
+
+  background: #ffffff;
+  border: 1px solid #dbe3ee;
+  border-radius: 16px;
+
+  box-shadow:
+    0 8px 24px rgba(15, 23, 42, 0.06);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.trash-item:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 14px 30px rgba(15, 23, 42, 0.1);
+}
+
+.trash-code {
+  color: #0f4c81;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.trash-name {
+  margin-top: 4px;
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.trash-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px 18px;
+
+  margin-top: 10px;
+
+  color: #64748b;
+  font-size: 13px;
+}
+
+.trash-actions {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-shrink: 0;
+}
+
+/* Giống button xanh ngoài giao diện */
+.restore-btn {
+  height: 42px;
+  margin: 0 !important;
+  padding: 0 18px;
+
+  border-radius: 11px;
+
+  background: linear-gradient(
+    135deg,
+    #2563eb,
+    #1d4ed8
+  ) !important;
+
+  color: #ffffff;
+}
+
+.restore-btn:hover {
+  background: linear-gradient(
+    135deg,
+    #1d4ed8,
+    #1e40af
+  ) !important;
+}
+
+/* Giống button xóa ngoài giao diện */
+.permanent-delete-btn,
+.clear-trash-btn {
+  height: 42px;
+  margin: 0 !important;
+  padding: 0 18px;
+
+  border-radius: 11px;
+
+  background: linear-gradient(
+    135deg,
+    #ef4444,
+    #dc2626
+  ) !important;
+
+  color: #ffffff;
+}
+
+.permanent-delete-btn:hover,
+.clear-trash-btn:hover {
+  background: linear-gradient(
+    135deg,
+    #dc2626,
+    #b91c1c
+  ) !important;
+}
+.trash-empty {
+  padding: 70px 24px;
+
+  background: #f8fafc;
+  text-align: center;
+}
+
+.trash-empty-icon {
+  width: 76px;
+  height: 76px;
+
+  display: grid;
+  place-items: center;
+
+  margin: 0 auto 16px;
+
+  border-radius: 22px;
+
+  background: #fee2e2;
+  color: #dc2626;
+
+  font-size: 38px;
+}
+
+.trash-empty h3 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 22px;
+}
+
+.trash-empty p {
+  margin: 8px 0 0;
+  color: #64748b;
+}
+@media (max-width: 720px) {
+  .trash-overlay {
+    padding: 12px;
+  }
+
+  .trash-modal {
+    width: 100%;
+    max-height: 92vh;
+    border-radius: 18px;
+  }
+
+  .trash-header {
+    padding: 18px;
+    border-radius: 18px 18px 0 0;
+  }
+
+  .trash-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+    padding: 16px 18px;
+  }
+
+  .trash-list {
+    padding: 18px;
+  }
+
+  .trash-item {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .trash-actions {
+    width: 100%;
+  }
+
+  .trash-actions button {
+    flex: 1;
+  }
+
+  .clear-trash-btn {
+    width: 100%;
+  }
+}

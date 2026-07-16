@@ -242,14 +242,91 @@ export const updateAsset = async (asset) => {
 };
 
 // Xóa
-export const deleteAsset = async (firebaseId) => {
+// export const deleteAsset = async (firebaseId) => {
+//   if (!firebaseId) {
+//     throw new Error("Firebase ID không hợp lệ.");
+//   }
+
+//   await update(ref(db), {
+//     [`assets/${firebaseId}`]: null,
+//     [`publicAssets/${firebaseId}`]: null,
+//   });
+// };
+export const moveAssetToTrash = async ({
+  asset,
+  deletedBy,
+}) => {
+  if (!asset?.firebaseId) {
+    throw new Error("Tài sản không có Firebase ID.");
+  }
+
+  const firebaseId = asset.firebaseId;
+
+  const trashData = {
+    ...asset,
+    deletedAt: new Date().toISOString(),
+    deletedBy: deletedBy || "",
+  };
+
+  await update(ref(db), {
+    [`assets/${firebaseId}`]: null,
+    [`publicAssets/${firebaseId}`]: null,
+    [`trash/${firebaseId}`]: trashData,
+  });
+};
+export const getTrashAssets = (callback) => {
+  const trashRef = ref(db, "trash");
+
+  return onValue(trashRef, (snapshot) => {
+    const data = snapshot.val();
+
+    if (!data) {
+      callback([]);
+      return;
+    }
+
+    const trashAssets = Object.entries(data).map(
+      ([firebaseId, value]) => ({
+        ...value,
+        firebaseId,
+      })
+    );
+
+    callback(trashAssets);
+  });
+};
+export const restoreAsset = async (asset) => {
+  if (!asset?.firebaseId) {
+    throw new Error("Tài sản không có Firebase ID.");
+  }
+
+  const {
+    deletedAt,
+    deletedBy,
+    ...restoredAsset
+  } = asset;
+
+  await update(ref(db), {
+    [`trash/${asset.firebaseId}`]: null,
+    [`assets/${asset.firebaseId}`]: restoredAsset,
+    [`publicAssets/${asset.firebaseId}`]:
+      createPublicAsset(restoredAsset),
+  });
+};
+export const permanentlyDeleteAsset = async (
+  firebaseId
+) => {
   if (!firebaseId) {
     throw new Error("Firebase ID không hợp lệ.");
   }
 
   await update(ref(db), {
-    [`assets/${firebaseId}`]: null,
-    [`publicAssets/${firebaseId}`]: null,
+    [`trash/${firebaseId}`]: null,
+  });
+};
+export const clearTrash = async () => {
+  await update(ref(db), {
+    trash: null,
   });
 };
 

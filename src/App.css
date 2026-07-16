@@ -36,3 +36,176 @@
     transform: rotate(360deg);
   }
 }
+
+.trash-modal {
+  width: min(94vw, 900px);
+  max-height: 88vh;
+  overflow-y: auto;
+  padding: 26px;
+
+  background: #ffffff;
+  border-radius: 24px;
+  box-shadow: 0 30px 80px rgba(15, 23, 42, 0.3);
+}
+
+.trash-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+
+  padding-bottom: 18px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.trash-header h2 {
+  margin: 0;
+  color: #0f172a;
+}
+
+.trash-header p {
+  margin: 6px 0 0;
+  color: #64748b;
+}
+
+.trash-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+
+  margin: 20px 0;
+  padding: 14px 16px;
+
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+
+  color: #64748b;
+  font-size: 14px;
+}
+
+.clear-trash-btn,
+.permanent-delete-btn {
+  background: #dc2626 !important;
+}
+
+.restore-btn {
+  background: #059669 !important;
+}
+
+.trash-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.trash-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+
+  padding: 18px;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  background: #ffffff;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.trash-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+}
+
+.trash-item-info {
+  min-width: 0;
+}
+
+.trash-code {
+  color: #0f4c81;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.trash-name {
+  margin-top: 4px;
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.trash-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+
+  margin-top: 9px;
+
+  color: #64748b;
+  font-size: 13px;
+}
+
+.trash-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 8px;
+}
+
+.trash-actions button {
+  margin: 0 !important;
+}
+
+.trash-empty {
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.trash-empty-icon {
+  font-size: 48px;
+}
+
+.trash-empty h3 {
+  margin: 14px 0 6px;
+  color: #0f172a;
+}
+
+.trash-empty p {
+  color: #64748b;
+}
+
+.trash-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 22px;
+  height: 22px;
+  margin-left: 8px;
+  padding: 0 6px;
+
+  border-radius: 999px;
+  background: #ef4444;
+  color: #ffffff;
+
+  font-size: 12px;
+  font-weight: 800;
+}
+
+@media (max-width: 700px) {
+  .trash-toolbar,
+  .trash-item {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .trash-actions {
+    width: 100%;
+  }
+
+  .trash-actions button {
+    flex: 1;
+  }
+}

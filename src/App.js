@@ -14,12 +14,20 @@ import QRCodeModal from "./components/QRCodeModal";
 import CreateAccountForm from "./components/CreateAccountForm";
 import { syncPublicAssets } from "./assetService";
 import "./styles.css";
+import TrashModal from "./components/TrashModel";
 import {
   validateAssetDuplicates,
 } from "./assetService";
 // import { confirm } from "./utils/alert";
 // import { loadAssets, saveAssets } from "./utils/localStorage";
 import { getAssets } from "./assetService";
+import {
+  moveAssetToTrash,
+  getTrashAssets,
+  restoreAsset,
+  permanentlyDeleteAsset,
+  clearTrash,
+} from "./assetService";
 import {
   showConfirm,
   showError,
@@ -29,7 +37,6 @@ import {
 import {
   addAsset as addAssetFirebase,
   updateAsset as updateAssetFirebase,
-  deleteAsset as deleteAssetFirebase,
   replaceAllAssets
   // importAssets
 } from "./assetService";
@@ -56,14 +63,17 @@ function App() {
   const [showMenu, setShowMenu] = useState(false);
   const [statusFilter, setStatusFilter] = useState("");
   const [qrAsset, setQrAsset] = useState(null);
-  // const isAdmin = userProfile?.role === "admin";
+  const [trashAssets, setTrashAssets] = useState([]);
+  const [showTrashModal, setShowTrashModal] = useState(false);
+  const [userProfile, setUserProfile] =
+    useState(null);
+  const isAdmin = userProfile?.role === "admin";
   // const [codeSearch, setCodeSearch] = useState("");
   const menuRef = useRef(null);
   const [currentUser, setCurrentUser] =
     useState(null);
 
-  const [userProfile, setUserProfile] =
-    useState(null);
+
 
   const [authLoading, setAuthLoading] =
     useState(true);
@@ -74,6 +84,86 @@ function App() {
     showCreateAccountModal,
     setShowCreateAccountModal,
   ] = useState(false);
+  // khôi phục 
+  const handleRestoreAsset = async (asset) => {
+    if (!isAdmin) return;
+
+    try {
+      await restoreAsset(asset);
+
+      showToast(
+        "success",
+        `Đã khôi phục ${asset.code}`
+      );
+    } catch (error) {
+      await showError(
+        "Không thể khôi phục",
+        error.message
+      );
+    }
+  };
+  //xóa sạch
+  const handlePermanentDelete = async (
+    asset
+  ) => {
+    if (!isAdmin) return;
+
+    const result = await showConfirm({
+      title: "Xóa vĩnh viễn",
+      text: `Tài sản ${asset.code} sẽ bị xóa hoàn toàn và không thể khôi phục.`,
+      confirmText: "Xóa vĩnh viễn",
+      cancelText: "Hủy",
+      icon: "warning",
+      danger: true,
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      await permanentlyDeleteAsset(
+        asset.firebaseId
+      );
+
+      showToast(
+        "success",
+        `Đã xóa vĩnh viễn ${asset.code}`
+      );
+    } catch (error) {
+      await showError(
+        "Không thể xóa vĩnh viễn",
+        error.message
+      );
+    }
+  };
+  // clear thùng rác
+  const handleClearTrash = async () => {
+    if (!isAdmin) return;
+
+    const result = await showConfirm({
+      title: "Xóa toàn bộ thùng rác",
+      text: `${trashAssets.length} tài sản sẽ bị xóa hoàn toàn và không thể khôi phục.`,
+      confirmText: "Xóa toàn bộ",
+      cancelText: "Hủy",
+      icon: "warning",
+      danger: true,
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      await clearTrash();
+
+      showToast(
+        "success",
+        "Đã xóa toàn bộ thùng rác"
+      );
+    } catch (error) {
+      await showError(
+        "Không thể xóa thùng rác",
+        error.message
+      );
+    }
+  };
   // const addAsset = async (asset) => {
   //   if (!isAdmin) {
   //     await showError(
@@ -231,6 +321,21 @@ function App() {
       }
     };
   }, [userProfile]);
+  // theo dõi thùng rác
+  useEffect(() => {
+    if (!isAdmin) {
+      setTrashAssets([]);
+      return;
+    }
+
+    const unsubscribe = getTrashAssets(setTrashAssets);
+
+    return () => {
+      if (typeof unsubscribe === "function") {
+        unsubscribe();
+      }
+    };
+  }, [isAdmin]);
   // const clearData = () => {
   //   localStorage.removeItem("assets");
   //   setAssets([]);
@@ -648,47 +753,55 @@ function App() {
   //     setSelectedAsset(null);
   //   }
   // };
-  const deleteAsset = async (
-    firebaseId
-  ) => {
+  const deleteAsset = async (firebaseId) => {
     if (!isAdmin) {
       await showError(
         "Không có quyền",
-        "Bạn không có quyền xóa tài sản."
+        "Chỉ Admin được xóa tài sản."
       );
+      return;
+    }
 
+    const asset = assets.find(
+      (item) => item.firebaseId === firebaseId
+    );
+
+    if (!asset) {
+      await showError(
+        "Không tìm thấy tài sản",
+        "Tài sản có thể đã bị xóa."
+      );
       return;
     }
 
     const result = await showConfirm({
-      title: "Xóa tài sản",
-      text: "Tài sản sẽ bị xóa khỏi hệ thống. Bạn chắc chắn muốn tiếp tục?",
-      confirmText: "Xóa tài sản",
+      title: "Chuyển vào thùng rác",
+      text: `Tài sản ${asset.code} sẽ được chuyển vào thùng rác và có thể khôi phục.`,
+      confirmText: "Chuyển vào thùng rác",
       cancelText: "Hủy",
       icon: "warning",
       danger: true,
     });
 
-    if (!result.isConfirmed) {
-      return;
-    }
+    if (!result.isConfirmed) return;
 
     try {
-      await deleteAssetFirebase(
-        firebaseId
-      );
+      await moveAssetToTrash({
+        asset,
+        deletedBy:
+          userProfile?.name ||
+          currentUser?.email ||
+          "Admin",
+      });
 
       setSelectedAsset(null);
 
       showToast(
         "success",
-        "Đã xóa tài sản"
+        "Đã chuyển tài sản vào thùng rác"
       );
     } catch (error) {
-      console.error(
-        "Lỗi xóa tài sản:",
-        error
-      );
+      console.error("Lỗi xóa mềm:", error);
 
       await showError(
         "Không thể xóa tài sản",
@@ -815,8 +928,8 @@ function App() {
       </>
     );
   }
-  const isAdmin =
-    userProfile?.role === "admin";
+  // const isAdmin =
+  //   userProfile?.role === "admin";
   // const canCreate = isAdmin;
   // const canEdit = isAdmin;
   // const canDelete = isAdmin;
@@ -1041,6 +1154,19 @@ function App() {
             <button className="danger-btn" onClick={clearData}>
               🗑 Xóa dữ liệu
             </button>
+            <button
+              onClick={() => {
+                setShowMenu(false);
+                setShowTrashModal(true);
+              }}
+            >
+              🗑️ Thùng rác 
+              {trashAssets.length > 0 && (
+                <span className="trash-count">
+                   -{trashAssets.length}
+                </span>
+              )}
+            </button>
           </div>
         </div>
       </div>
@@ -1118,6 +1244,19 @@ function App() {
         <QRCodeModal
           asset={qrAsset}
           onClose={() => setQrAsset(null)}
+        />
+      )}
+      {isAdmin && showTrashModal && (
+        <TrashModal
+          assets={trashAssets}
+          onRestore={handleRestoreAsset}
+          onPermanentDelete={
+            handlePermanentDelete
+          }
+          onClearTrash={handleClearTrash}
+          onClose={() =>
+            setShowTrashModal(false)
+          }
         />
       )}
     </div>
