@@ -114,7 +114,10 @@ export async function requireAdmin(req) {
     await getAdminServices();
 
   const decodedToken =
-    await adminAuth.verifyIdToken(idToken);
+    await adminAuth.verifyIdToken(
+      idToken,
+      true
+    );
 
   const snapshot = await adminDb
     .ref(`users/${decodedToken.uid}`)
