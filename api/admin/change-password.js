@@ -76,6 +76,9 @@ export default async function handler(req, res) {
       password: newPassword,
     });
 
+    // Thu hồi các phiên đăng nhập cũ
+    await adminAuth.revokeRefreshTokens(uid);
+
     await adminDb
       .ref(`users/${uid}`)
       .update({
