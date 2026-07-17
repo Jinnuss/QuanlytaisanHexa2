@@ -72,7 +72,7 @@ export async function changeEmployeePassword(
   newPassword
 ) {
   const headers =
-    await getAuthorizationHeaders();
+    await getAuthorizationHeader();
 
   const response = await fetch(
     "/api/admin/change-password",
