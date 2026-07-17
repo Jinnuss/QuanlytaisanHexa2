@@ -68,10 +68,11 @@ export async function createEmployeeAccount(
 
 export async function changeEmployeePassword(
   uid,
+  email,
   newPassword
 ) {
   const headers =
-    await getAuthorizationHeader();
+    await getAuthorizationHeaders();
 
   const response = await fetch(
     "/api/admin/change-password",
@@ -80,6 +81,7 @@ export async function changeEmployeePassword(
       headers,
       body: JSON.stringify({
         uid,
+        email,
         newPassword,
       }),
     }

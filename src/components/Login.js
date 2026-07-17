@@ -14,9 +14,21 @@ function Login({ authError = "" }) {
             setLoading(true);
             setError("");
 
-            await login(email, password);
-        } catch (err) {
-            console.error("Lỗi đăng nhập:", err);
+            const credential = await login(
+                email.trim(),
+                password
+            );
+
+            console.log("Đăng nhập thành công:", {
+                uid: credential.user.uid,
+                email: credential.user.email,
+            });
+        } catch (error) {
+            console.error("LOGIN_ERROR:", {
+                code: error.code,
+                message: error.message,
+            });
+
             setError("Email hoặc mật khẩu không đúng.");
         } finally {
             setLoading(false);

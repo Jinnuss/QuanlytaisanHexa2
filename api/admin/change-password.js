@@ -4,14 +4,6 @@ import {
 } from "../_firebaseAdmin.js";
 
 export default async function handler(req, res) {
-  if (req.method === "GET") {
-    return res.status(200).json({
-      ok: true,
-      message: "Change-password API đang hoạt động.",
-      nodeVersion: process.version,
-    });
-  }
-
   if (req.method !== "POST") {
     return res.status(405).json({
       message: "Method not allowed.",
@@ -21,9 +13,9 @@ export default async function handler(req, res) {
   try {
     const currentAdmin = await requireAdmin(req);
 
-    const { uid, newPassword } = req.body || {};
+    const { uid, email, newPassword } = req.body || {};
 
-    if (!uid || typeof uid !== "string") {
+    if (!uid) {
       return res.status(400).json({
         message: "Thiếu UID tài khoản.",
       });
@@ -34,13 +26,7 @@ export default async function handler(req, res) {
       newPassword.length < 6
     ) {
       return res.status(400).json({
-        message: "Mật khẩu mới phải có ít nhất 6 ký tự.",
-      });
-    }
-
-    if (newPassword.length > 128) {
-      return res.status(400).json({
-        message: "Mật khẩu mới quá dài.",
+        message: "Mật khẩu phải có ít nhất 6 ký tự.",
       });
     }
 
@@ -49,45 +35,40 @@ export default async function handler(req, res) {
 
     const targetUser = await adminAuth.getUser(uid);
 
-    const profileSnapshot = await adminDb
-      .ref(`users/${uid}`)
-      .once("value");
+    console.log("CHANGE_PASSWORD_TARGET", {
+      requestedUid: uid,
+      requestedEmail: email || "",
+      actualUid: targetUser.uid,
+      actualEmail: targetUser.email || "",
+      changedBy: currentAdmin.uid,
+    });
 
-    const targetProfile = profileSnapshot.val();
-
-    if (!targetProfile) {
-      return res.status(404).json({
-        message: "Không tìm thấy thông tin tài khoản.",
-      });
-    }
-
-    // Không cho Admin này đổi mật khẩu một Admin khác
     if (
-      targetProfile.role === "admin" &&
-      uid !== currentAdmin.uid
+      email &&
+      targetUser.email?.toLowerCase() !==
+        email.trim().toLowerCase()
     ) {
-      return res.status(403).json({
+      return res.status(409).json({
         message:
-          "Không được thay đổi mật khẩu của tài khoản Admin khác.",
+          "UID và email không cùng một tài khoản. Vui lòng tải lại danh sách tài khoản.",
       });
     }
 
-    await adminAuth.updateUser(uid, {
+    const updatedUser = await adminAuth.updateUser(uid, {
       password: newPassword,
     });
 
-    // Thu hồi các phiên đăng nhập cũ
     await adminAuth.revokeRefreshTokens(uid);
 
-    await adminDb
-      .ref(`users/${uid}`)
-      .update({
-        passwordUpdatedAt: new Date().toISOString(),
-        passwordUpdatedBy: currentAdmin.uid,
-      });
+    await adminDb.ref(`users/${uid}`).update({
+      passwordUpdatedAt: new Date().toISOString(),
+      passwordUpdatedBy: currentAdmin.uid,
+    });
 
     return res.status(200).json({
-      message: `Đã đổi mật khẩu cho ${targetUser.email || "tài khoản"}.`,
+      message: "Đổi mật khẩu thành công.",
+      updatedUid: updatedUser.uid,
+      updatedEmail: updatedUser.email || "",
     });
   } catch (error) {
     console.error("CHANGE_PASSWORD_ERROR", {
@@ -110,19 +91,13 @@ export default async function handler(req, res) {
 
     if (error?.code === "auth/user-not-found") {
       return res.status(404).json({
-        message: "Tài khoản không còn tồn tại.",
-      });
-    }
-
-    if (error?.code === "auth/invalid-password") {
-      return res.status(400).json({
-        message:
-          "Mật khẩu không hợp lệ. Mật khẩu phải có ít nhất 6 ký tự.",
+        message: "Không tìm thấy tài khoản Authentication.",
       });
     }
 
     return res.status(500).json({
-      message: "Không thể đổi mật khẩu.",
+      message:
+        error?.message || "Không thể đổi mật khẩu.",
       errorCode: error?.code || "UNKNOWN_ERROR",
     });
   }

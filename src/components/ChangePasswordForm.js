@@ -45,10 +45,26 @@ function ChangePasswordForm({
       setLoading(true);
       setError("");
 
-      await changeEmployeePassword(
+      console.log("Đang đổi mật khẩu cho:", {
+        uid: account.uid,
+        email: account.email,
+      });
+
+      const result = await changeEmployeePassword(
         account.uid,
+        account.email,
         newPassword
       );
+      if (
+        result.updatedEmail?.toLowerCase() !==
+        account.email?.toLowerCase()
+      ) {
+        throw new Error(
+          "API đã cập nhật nhầm tài khoản."
+        );
+      }
+
+      console.log("API đổi mật khẩu trả về:", result);
 
       await showSuccess(
         "Đổi mật khẩu thành công",
