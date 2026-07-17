@@ -11,6 +11,8 @@ export default async function handler(req, res) {
   }
 
   try {
+    console.log("===== CHANGE PASSWORD API =====");
+    console.log(req.body);
     const currentAdmin = await requireAdmin(req);
 
     const { uid, email, newPassword } = req.body || {};
@@ -34,6 +36,10 @@ export default async function handler(req, res) {
       await getAdminServices();
 
     const targetUser = await adminAuth.getUser(uid);
+    console.log("USER BEFORE UPDATE:", {
+      uid: targetUser.uid,
+      email: targetUser.email,
+    });
 
     console.log("CHANGE_PASSWORD_TARGET", {
       requestedUid: uid,
@@ -46,7 +52,7 @@ export default async function handler(req, res) {
     if (
       email &&
       targetUser.email?.toLowerCase() !==
-        email.trim().toLowerCase()
+      email.trim().toLowerCase()
     ) {
       return res.status(409).json({
         message:
@@ -59,6 +65,7 @@ export default async function handler(req, res) {
     });
 
     await adminAuth.revokeRefreshTokens(uid);
+    console.log("PASSWORD UPDATED");
 
     await adminDb.ref(`users/${uid}`).update({
       passwordUpdatedAt: new Date().toISOString(),
