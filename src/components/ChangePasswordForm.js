@@ -25,6 +25,9 @@ function ChangePasswordForm({
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    console.log("CLICK CHANGE PASSWORD");
+
+    console.log("Before changeEmployeePassword");
 
     if (!newPassword) {
       setError("Vui lòng nhập mật khẩu mới.");
