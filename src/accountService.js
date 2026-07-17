@@ -71,6 +71,8 @@ export async function changeEmployeePassword(
   email,
   newPassword
 ) {
+  console.log("changeEmployeePassword() called");
+
   const headers =
     await getAuthorizationHeader();
 
@@ -86,6 +88,7 @@ export async function changeEmployeePassword(
       }),
     }
   );
+  console.log(response.status);
 
   return parseResponse(response);
 }
