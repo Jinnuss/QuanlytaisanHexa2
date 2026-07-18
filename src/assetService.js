@@ -330,12 +330,291 @@ export const clearTrash = async () => {
   });
 };
 
-// Import thêm
-export const importAssets = async (assets) => {
-  for (const asset of assets) {
-    await push(ref(db, "assets"), asset);
-  }
+// Import Excel: thêm mới, cập nhật và bỏ qua dữ liệu không đổi
+const normalizeText = (value) =>
+  String(value ?? "").trim();
+
+const normalizePrice = (value) => {
+  const price = Number(value);
+  return Number.isFinite(price) ? price : 0;
 };
+
+const getChangedFields = (oldAsset, newAsset) => {
+  const changedFields = [];
+
+  if (normalizeText(oldAsset.name) !== normalizeText(newAsset.name)) {
+    changedFields.push("Tên tài sản");
+  }
+
+  if (
+    normalizeText(oldAsset.company) !==
+    normalizeText(newAsset.company)
+  ) {
+    changedFields.push("Công ty");
+  }
+
+  if (normalizeText(oldAsset.user) !== normalizeText(newAsset.user)) {
+    changedFields.push("Người sử dụng");
+  }
+
+  if (normalizePrice(oldAsset.price) !== normalizePrice(newAsset.price)) {
+    changedFields.push("Giá tiền");
+  }
+
+  if (normalizeText(oldAsset.note) !== normalizeText(newAsset.note)) {
+    changedFields.push("Ghi chú");
+  }
+
+  if (
+    normalizeIpAddress(oldAsset.ipAddress) !==
+    normalizeIpAddress(newAsset.ipAddress)
+  ) {
+    changedFields.push("Địa chỉ IP");
+  }
+
+  if (
+    normalizeText(oldAsset.status) !==
+    normalizeText(newAsset.status)
+  ) {
+    changedFields.push("Trạng thái");
+  }
+
+  return changedFields;
+};
+
+export const importAssets = async (importedAssets) => {
+  if (!Array.isArray(importedAssets)) {
+    throw new Error("Dữ liệu import không hợp lệ.");
+  }
+
+  const snapshot = await get(ref(db, "assets"));
+  const databaseAssets = snapshot.exists()
+    ? snapshot.val()
+    : {};
+
+  const assetsByCode = new Map();
+  const ipOwners = new Map();
+
+  Object.entries(databaseAssets).forEach(
+    ([firebaseId, asset]) => {
+      const code = normalizeAssetCode(asset.code);
+      const ip = normalizeIpAddress(asset.ipAddress);
+
+      if (code) {
+        assetsByCode.set(code, {
+          firebaseId,
+          asset,
+        });
+      }
+
+      if (ip) {
+        ipOwners.set(ip, firebaseId);
+      }
+    }
+  );
+
+  const firebaseUpdates = {};
+  const processedCodes = new Set();
+
+  const addedItems = [];
+  const updatedItems = [];
+  const unchangedItems = [];
+  const skippedItems = [];
+
+  for (const importedAsset of importedAssets) {
+    const normalizedCode = normalizeAssetCode(
+      importedAsset.code
+    );
+    const normalizedIp = normalizeIpAddress(
+      importedAsset.ipAddress
+    );
+
+    if (!normalizedCode) {
+      skippedItems.push({
+        row: importedAsset.excelRow,
+        code: importedAsset.code || "",
+        reason: "Thiếu mã tài sản",
+      });
+      continue;
+    }
+
+    if (processedCodes.has(normalizedCode)) {
+      skippedItems.push({
+        row: importedAsset.excelRow,
+        code: importedAsset.code,
+        reason: "Trùng mã tài sản trong file Excel",
+      });
+      continue;
+    }
+
+    processedCodes.add(normalizedCode);
+
+    const existingRecord = assetsByCode.get(normalizedCode);
+
+    if (!existingRecord) {
+      if (normalizedIp && ipOwners.has(normalizedIp)) {
+        skippedItems.push({
+          row: importedAsset.excelRow,
+          code: importedAsset.code,
+          reason: "Địa chỉ IP đang thuộc tài sản khác",
+        });
+        continue;
+      }
+
+      const newAssetRef = push(ref(db, "assets"));
+      const firebaseId = newAssetRef.key;
+
+      if (!firebaseId) {
+        skippedItems.push({
+          row: importedAsset.excelRow,
+          code: importedAsset.code,
+          reason: "Không thể tạo Firebase ID",
+        });
+        continue;
+      }
+
+      const now = new Date().toISOString();
+      const newAssetData = {
+        id: importedAsset.id || crypto.randomUUID(),
+        firebaseId,
+        code: normalizedCode,
+        name: normalizeText(importedAsset.name),
+        company: normalizeText(importedAsset.company),
+        user: normalizeText(importedAsset.user),
+        price: normalizePrice(importedAsset.price),
+        note: normalizeText(importedAsset.note),
+        ipAddress: normalizedIp,
+        status: importedAsset.user
+          ? "Đang cấp phát"
+          : "Kho",
+        createdDate:
+          importedAsset.createdDate ||
+          now.split("T")[0],
+        logs: [
+          {
+            action: "Import tài sản từ Excel",
+            date: now,
+          },
+        ],
+      };
+
+      firebaseUpdates[`assets/${firebaseId}`] = newAssetData;
+      firebaseUpdates[`publicAssets/${firebaseId}`] =
+        createPublicAsset(newAssetData);
+
+      addedItems.push({
+        row: importedAsset.excelRow,
+        code: newAssetData.code,
+      });
+
+      assetsByCode.set(normalizedCode, {
+        firebaseId,
+        asset: newAssetData,
+      });
+
+      if (normalizedIp) {
+        ipOwners.set(normalizedIp, firebaseId);
+      }
+
+      continue;
+    }
+
+    const { firebaseId, asset: oldAsset } = existingRecord;
+    const ipOwner = normalizedIp
+      ? ipOwners.get(normalizedIp)
+      : null;
+
+    if (ipOwner && ipOwner !== firebaseId) {
+      skippedItems.push({
+        row: importedAsset.excelRow,
+        code: importedAsset.code,
+        reason: "Địa chỉ IP đang thuộc tài sản khác",
+      });
+      continue;
+    }
+
+    const nextAsset = {
+      ...oldAsset,
+      firebaseId,
+      code: normalizedCode,
+      name: normalizeText(importedAsset.name),
+      company: normalizeText(importedAsset.company),
+      user: normalizeText(importedAsset.user),
+      price: normalizePrice(importedAsset.price),
+      note: normalizeText(importedAsset.note),
+      ipAddress: normalizedIp,
+      status: importedAsset.user
+        ? "Đang cấp phát"
+        : "Kho",
+    };
+
+    const changedFields = getChangedFields(oldAsset, nextAsset);
+
+    if (changedFields.length === 0) {
+      unchangedItems.push({
+        row: importedAsset.excelRow,
+        code: importedAsset.code,
+      });
+      continue;
+    }
+
+    const oldIp = normalizeIpAddress(oldAsset.ipAddress);
+    const oldLogs = Array.isArray(oldAsset.logs)
+      ? oldAsset.logs
+      : [];
+
+    const updatedAssetData = {
+      ...nextAsset,
+      logs: [
+        ...oldLogs,
+        {
+          action: `Cập nhật từ Excel: ${changedFields.join(", ")}`,
+          date: new Date().toISOString(),
+        },
+      ],
+    };
+
+    firebaseUpdates[`assets/${firebaseId}`] = updatedAssetData;
+    firebaseUpdates[`publicAssets/${firebaseId}`] =
+      createPublicAsset(updatedAssetData);
+
+    updatedItems.push({
+      row: importedAsset.excelRow,
+      code: importedAsset.code,
+      changedFields,
+    });
+
+    if (oldIp && oldIp !== normalizedIp) {
+      ipOwners.delete(oldIp);
+    }
+
+    if (normalizedIp) {
+      ipOwners.set(normalizedIp, firebaseId);
+    }
+
+    assetsByCode.set(normalizedCode, {
+      firebaseId,
+      asset: updatedAssetData,
+    });
+  }
+
+  if (Object.keys(firebaseUpdates).length > 0) {
+    await update(ref(db), firebaseUpdates);
+  }
+
+  return {
+    total: importedAssets.length,
+    added: addedItems.length,
+    updated: updatedItems.length,
+    unchanged: unchangedItems.length,
+    skipped: skippedItems.length,
+    addedItems,
+    updatedItems,
+    unchangedItems,
+    skippedItems,
+  };
+};
+
 export const getPublicAsset = async (firebaseId) => {
   if (!firebaseId) {
     throw new Error("Firebase ID không hợp lệ.");

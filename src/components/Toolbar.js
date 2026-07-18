@@ -1,33 +1,58 @@
+import React, { useRef, useState } from "react";
+
 function Toolbar({ onExport, onImport }) {
+  const fileInputRef = useRef(null);
+  const [importing, setImporting] = useState(false);
 
-    return (
+  const handleChooseFile = () => {
+    if (!importing) {
+      fileInputRef.current?.click();
+    }
+  };
 
-        <div className="toolbar">
+  const handleFileChange = async (event) => {
+    const file = event.target.files?.[0];
 
-            <button className="button" onClick={onExport}>
-                Export Excel
-            </button>
+    if (!file) return;
 
-            <button className="button btn1">
-                <label className="btn">
+    try {
+      setImporting(true);
+      await onImport(file);
+    } finally {
+      setImporting(false);
+      event.target.value = "";
+    }
+  };
 
-                    Import Excel
+  return (
+    <div className="toolbar">
+      <button
+        type="button"
+        className="button"
+        onClick={onExport}
+        disabled={importing}
+      >
+        Export Excel
+      </button>
 
-                    <input
-                        hidden
-                        type="file"
-                        accept=".xlsx,.xls"
-                        onChange={(e) => onImport(e.target.files[0])}
-                    />
+      <button
+        type="button"
+        className="button btn1"
+        onClick={handleChooseFile}
+        disabled={importing}
+      >
+        {importing ? "Đang import..." : "Import Excel"}
+      </button>
 
-                </label>
-            </button>
-
-
-        </div>
-
-    );
-
+      <input
+        ref={fileInputRef}
+        hidden
+        type="file"
+        accept=".xlsx,.xls"
+        onChange={handleFileChange}
+      />
+    </div>
+  );
 }
 
 export default Toolbar;

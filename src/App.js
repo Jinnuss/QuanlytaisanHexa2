@@ -13,6 +13,9 @@ import Modal from "./components/Modal";
 import QRCodeModal from "./components/QRCodeModal";
 import CreateAccountForm from "./components/CreateAccountForm";
 import { syncPublicAssets } from "./assetService";
+import {
+  importAssets,
+} from "./assetService";
 import "./styles.css";
 import AccountManagementModal
   from "./components/AccountManagementModal";
@@ -39,14 +42,12 @@ import {
 import {
   addAsset as addAssetFirebase,
   updateAsset as updateAssetFirebase,
-  replaceAllAssets
   // importAssets
 } from "./assetService";
 import {
   exportAssetsToExcel,
   importAssetsFromExcel
 } from "./utils/excel";
-import "./styles.css";
 import Login from "./components/Login";
 
 import {
@@ -943,34 +944,6 @@ function App() {
   // const canExport = isAdmin;
   // const canClearAll = isAdmin;
   // const canManageAccounts = isAdmin;
-  const validateImportedAssets = async (
-    importedAssets
-  ) => {
-    for (let index = 0; index <
-      importedAssets.length;
-      index++
-    ) {
-      const asset =
-        importedAssets[index];
-
-      const result =
-        await validateAssetDuplicates(
-          asset
-        );
-
-      if (!result.valid) {
-        return {
-          valid: false,
-          row: index + 2,
-          message: result.message,
-        };
-      }
-    }
-
-    return {
-      valid: true,
-    };
-  };
   return (
 
     <div className="container">
@@ -1148,41 +1121,40 @@ function App() {
 
             <Toolbar
               onExport={() => exportAssetsToExcel(assets)}
-              onImport={(file) =>
-                importAssetsFromExcel(
-                  file,
-                  async (newAssets) => {
-                    try {
-                      const validation =
-                        await validateImportedAssets(
-                          newAssets
-                        );
-
-                      if (!validation.valid) {
-                        await showError(
-                          `Lỗi tại dòng ${validation.row}`,
-                          validation.message
-                        );
-                        return;
-                      }
-
-                      await replaceAllAssets(
-                        newAssets
-                      );
+              onImport={async (file) => {
+                try {
+                  await importAssetsFromExcel(
+                    file,
+                    async (newAssets, excelResult) => {
+                      const result = await importAssets(newAssets);
+                      const totalSkipped =
+                        result.skipped +
+                        excelResult.skippedInFile;
 
                       await showSuccess(
-                        "Import thành công",
-                        `Đã nhập ${newAssets.length} tài sản.`
-                      );
-                    } catch (error) {
-                      await showError(
-                        "Import thất bại",
-                        error.message
+                        "Import hoàn tất",
+                        `Tổng số dòng Excel: ${excelResult.totalRows}
+` +
+                        `Đã thêm mới: ${result.added}
+` +
+                        `Đã cập nhật: ${result.updated}
+` +
+                        `Không thay đổi: ${result.unchanged}
+` +
+                        `Đã bỏ qua: ${totalSkipped}`
                       );
                     }
-                  }
-                )
-              }
+                  );
+                } catch (error) {
+                  console.error("Lỗi import:", error);
+
+                  await showError(
+                    "Import thất bại",
+                    error.message ||
+                    "Không thể import dữ liệu."
+                  );
+                }
+              }}
             />
 
             <button className="danger-btn" onClick={clearData}>
