@@ -27,7 +27,8 @@ function AssetList({
           <th>Tên</th>
           <th>Công ty</th>
           <th>Người dùng</th>
-          <th>Giá tiền</th>
+          {/* <th>Giá tiền</th> */}
+          <th>Địa chỉ IP</th>
           <th>Ghi chú</th>
           <th>Trạng thái</th>
           <th>Thao tác</th>
@@ -41,8 +42,11 @@ function AssetList({
             <td>{asset.name}</td>
             <td>{asset.company}</td>
             <td>{asset.user}</td>
-            <td>
+            {/* <td>
               {Number(asset.price).toLocaleString("vi-VN")} ₫
+            </td> */}
+            <td className="ip-column">
+              {asset.ipAddress || "Chưa có IP"}
             </td>
             <td className="note-column" title={asset.note}>{asset.note}</td>
 

@@ -2950,3 +2950,14 @@ body {
     width: 100%;
   }
 }
+.ip-column {
+  min-width: 130px;
+  white-space: nowrap;
+  text-align: center;
+  font-family: monospace;
+}
+
+.ip-empty {
+  color: #999;
+  font-style: italic;
+}
