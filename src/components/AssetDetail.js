@@ -1,12 +1,12 @@
 import React from "react";
 import AuditLog from "./AuditLog";
-import {
-  getAssetTypeFromCode,
-} from "../utils/assetType";
+// import {
+//   getAssetTypeFromCode,
+// } from "../utils/assetType";
 function AssetDetail({ asset }) {
-  const assetType =
-    asset.assetType ||
-    getAssetTypeFromCode(asset.code);
+  // const assetType =
+  //   asset.assetType ||
+  //   getAssetTypeFromCode(asset.code);
   return (
     <div className="detail">
 
