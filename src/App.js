@@ -16,6 +16,9 @@ import { syncPublicAssets } from "./assetService";
 import {
   importAssets,
 } from "./assetService";
+import {
+  getAssetTypeFromCode
+} from "./utils/assetType";
 import "./styles.css";
 import AccountManagementModal
   from "./components/AccountManagementModal";
@@ -65,6 +68,10 @@ function App() {
   const [assets, setAssets] = useState([]);
   const [showMenu, setShowMenu] = useState(false);
   const [statusFilter, setStatusFilter] = useState("");
+  const [
+    assetTypeFilter,
+    setAssetTypeFilter
+  ] = useState("");
   const [qrAsset, setQrAsset] = useState(null);
   const [trashAssets, setTrashAssets] = useState([]);
   const [showTrashModal, setShowTrashModal] = useState(false);
@@ -897,23 +904,58 @@ function App() {
   //   return matchCode && matchName && matchCompany;
 
   // });
-  const filteredAssets = assets.filter((asset) => {
-    const keyword = searchText.toLowerCase().trim();
+  const filteredAssets = assets.filter(
+    (asset) => {
+      const keyword = searchText
+        .toLowerCase()
+        .trim();
 
-    const matchSearch =
-      (asset.code || "").toLowerCase().includes(keyword) ||
-      (asset.name || "").toLowerCase().includes(keyword) ||
-      (asset.user || "").toLowerCase().includes(keyword) ||
-      (asset.note || "").toLowerCase().includes(keyword);
+      const matchSearch =
+        (asset.code || "")
+          .toLowerCase()
+          .includes(keyword) ||
 
-    const matchCompany =
-      companyFilter === "" || asset.company === companyFilter;
+        (asset.name || "")
+          .toLowerCase()
+          .includes(keyword) ||
 
-    const matchStatus =
-      statusFilter === "" || asset.status === statusFilter;
+        (asset.user || "")
+          .toLowerCase()
+          .includes(keyword) ||
 
-    return matchSearch && matchCompany && matchStatus;
-  });
+        (asset.note || "")
+          .toLowerCase()
+          .includes(keyword) ||
+
+        (asset.ipAddress || "")
+          .toLowerCase()
+          .includes(keyword);
+
+      const matchCompany =
+        companyFilter === "" ||
+        asset.company === companyFilter;
+
+      const matchStatus =
+        statusFilter === "" ||
+        asset.status === statusFilter;
+
+      const currentAssetType =
+        asset.assetType ||
+        getAssetTypeFromCode(asset.code);
+
+      const matchAssetType =
+        assetTypeFilter === "" ||
+        currentAssetType ===
+        assetTypeFilter;
+
+      return (
+        matchSearch &&
+        matchCompany &&
+        matchStatus &&
+        matchAssetType
+      );
+    }
+  );
   if (authLoading) {
     return (
       <div className="page-loading">
@@ -1026,10 +1068,15 @@ function App() {
           <FilterBar
             searchText={searchText}
             setSearchText={setSearchText}
+
             companyFilter={companyFilter}
             setCompanyFilter={setCompanyFilter}
+
             statusFilter={statusFilter}
             setStatusFilter={setStatusFilter}
+
+            assetTypeFilter={assetTypeFilter}
+            setAssetTypeFilter={setAssetTypeFilter}
           />
         </div>
 

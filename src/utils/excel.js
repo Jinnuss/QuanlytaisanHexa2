@@ -5,6 +5,9 @@ import {
   normalizeAssetCode,
   normalizeIpAddress,
 } from "./normalize";
+import {
+  getAssetTypeFromCode,
+} from "./assetType";
 
 const normalizeHeader = (value) =>
   String(value ?? "")
@@ -38,6 +41,9 @@ const parsePrice = (value) => {
 export const exportAssetsToExcel = (assets) => {
   const data = assets.map((asset) => ({
     "Mã tài sản": asset.code || "",
+    "Loại tài sản":
+      asset.assetType ||
+      getAssetTypeFromCode(asset.code),
     "Tên tài sản": asset.name || "",
     "Công ty": asset.company || "",
     "Người sử dụng": asset.user || "",
@@ -149,6 +155,11 @@ export const importAssetsFromExcel = (file, callback) =>
           assets.push({
             id: crypto.randomUUID(),
             code,
+            assetType:
+              String(row["Loại tài sản"] || "")
+                .trim()
+                .toUpperCase() ||
+              getAssetTypeFromCode(code),
             name,
             company,
             user,

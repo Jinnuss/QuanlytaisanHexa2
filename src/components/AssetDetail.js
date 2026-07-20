@@ -1,7 +1,12 @@
 import React from "react";
 import AuditLog from "./AuditLog";
-
+import {
+  getAssetTypeFromCode,
+} from "../utils/assetType";
 function AssetDetail({ asset }) {
+  const assetType =
+    asset.assetType ||
+    getAssetTypeFromCode(asset.code);
   return (
     <div className="detail">
 
@@ -9,6 +14,10 @@ function AssetDetail({ asset }) {
 
       <p>
         <strong>Mã:</strong> {asset.code}
+      </p>
+      <p>
+        <strong>Loại tài sản:</strong>{" "}
+        {asset.assetType || "Chưa xác định"}
       </p>
 
       <p>

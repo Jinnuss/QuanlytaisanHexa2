@@ -14,10 +14,15 @@ import {
   normalizeAssetCode,
   normalizeIpAddress,
 } from "./utils/normalize";
-
+import {
+  getAssetTypeFromCode,
+} from "./utils/assetType";
 // Đọc realtime
 const createPublicAsset = (asset) => ({
   code: asset.code || "",
+  assetType:
+    asset.assetType ||
+    getAssetTypeFromCode(asset.code),
   name: asset.name || "",
   company: asset.company || "",
   user: asset.user || "",
@@ -203,6 +208,9 @@ export const addAsset = async (asset) => {
     ...asset,
     firebaseId,
     code: normalizeAssetCode(asset.code),
+    assetType:
+      asset.assetType ||
+      getAssetTypeFromCode(asset.code),
     ipAddress: normalizeIpAddress(
       asset.ipAddress
     ),
@@ -227,6 +235,9 @@ export const updateAsset = async (asset) => {
   const assetData = {
     ...asset,
     code: normalizeAssetCode(asset.code),
+    assetType:
+      asset.assetType ||
+      getAssetTypeFromCode(asset.code),
     ipAddress: normalizeIpAddress(
       asset.ipAddress
     ),
@@ -306,11 +317,20 @@ export const restoreAsset = async (asset) => {
     ...restoredAsset
   } = asset;
 
+  const restoredAssetData = {
+    ...restoredAsset,
+
+    assetType:
+      restoredAsset.assetType ||
+      getAssetTypeFromCode(restoredAsset.code),
+  };
+
   await update(ref(db), {
     [`trash/${asset.firebaseId}`]: null,
-    [`assets/${asset.firebaseId}`]: restoredAsset,
+    [`assets/${asset.firebaseId}`]: restoredAssetData,
+
     [`publicAssets/${asset.firebaseId}`]:
-      createPublicAsset(restoredAsset),
+      createPublicAsset(restoredAssetData),
   });
 };
 export const permanentlyDeleteAsset = async (
@@ -377,6 +397,18 @@ const getChangedFields = (oldAsset, newAsset) => {
     normalizeText(newAsset.status)
   ) {
     changedFields.push("Trạng thái");
+  }
+  if (
+    normalizeText(
+      oldAsset.assetType ||
+      getAssetTypeFromCode(oldAsset.code)
+    ) !==
+    normalizeText(
+      newAsset.assetType ||
+      getAssetTypeFromCode(newAsset.code)
+    )
+  ) {
+    changedFields.push("Loại tài sản");
   }
 
   return changedFields;
@@ -478,6 +510,9 @@ export const importAssets = async (importedAssets) => {
         id: importedAsset.id || crypto.randomUUID(),
         firebaseId,
         code: normalizedCode,
+        assetType:
+          importedAsset.assetType ||
+          getAssetTypeFromCode(normalizedCode),
         name: normalizeText(importedAsset.name),
         company: normalizeText(importedAsset.company),
         user: normalizeText(importedAsset.user),
@@ -537,6 +572,9 @@ export const importAssets = async (importedAssets) => {
       ...oldAsset,
       firebaseId,
       code: normalizedCode,
+      assetType:
+        importedAsset.assetType ||
+        getAssetTypeFromCode(normalizedCode),
       name: normalizeText(importedAsset.name),
       company: normalizeText(importedAsset.company),
       user: normalizeText(importedAsset.user),
@@ -659,10 +697,27 @@ export const replaceAllAssets = async (assets) => {
   assets.forEach((asset) => {
     const firebaseId = crypto.randomUUID();
 
+    const normalizedCode =
+      normalizeAssetCode(asset.code);
+
     const assetData = {
       ...asset,
+
       firebaseId,
-      logs: Array.isArray(asset.logs) ? asset.logs : [],
+
+      code: normalizedCode,
+
+      assetType:
+        asset.assetType ||
+        getAssetTypeFromCode(normalizedCode),
+
+      ipAddress:
+        normalizeIpAddress(asset.ipAddress),
+
+      logs:
+        Array.isArray(asset.logs)
+          ? asset.logs
+          : [],
     };
 
     assetsResult[firebaseId] = assetData;
